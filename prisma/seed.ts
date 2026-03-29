@@ -1,0 +1,152 @@
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
+
+const games = [
+  {
+    name: 'Card Match',
+    slug: 'card-match',
+    category: 'visual-memory',
+    difficulty: 'beginner',
+    description: 'Classic memory card matching game. Flip cards to find matching pairs. Trains visual memory and spatial recall.',
+    benefits: ['Improves short-term visual memory', 'Enhances pattern recognition', 'Builds concentration'],
+    rules: ['Flip two cards per turn', 'Match all pairs to win', 'Fewer moves = higher score'],
+    gameType: 'match',
+    gridSize: 4,
+    timeLimit: 120,
+    maxLevel: 10,
+  },
+  {
+    name: 'Sequence Recall',
+    slug: 'sequence-recall',
+    category: 'working-memory',
+    difficulty: 'beginner',
+    description: 'Remember and reproduce increasingly long sequences of colors and positions. Based on the classic Simon game.',
+    benefits: ['Strengthens working memory capacity', 'Improves sequential processing', 'Builds auditory-visual integration'],
+    rules: ['Watch the sequence carefully', 'Repeat the sequence in order', 'Each level adds one more step'],
+    gameType: 'sequence',
+    gridSize: 4,
+    timeLimit: 0,
+    maxLevel: 20,
+  },
+  {
+    name: 'Number Matrix',
+    slug: 'number-matrix',
+    category: 'working-memory',
+    difficulty: 'intermediate',
+    description: 'Memorize numbers in a grid, then recall their positions. Tests spatial working memory and numerical processing.',
+    benefits: ['Enhances numerical memory', 'Improves spatial reasoning', 'Strengthens mental mapping'],
+    rules: ['Study the number grid', 'Numbers disappear after a few seconds', 'Click cells in ascending order'],
+    gameType: 'matrix',
+    gridSize: 5,
+    timeLimit: 90,
+    maxLevel: 15,
+  },
+  {
+    name: 'Word Chain',
+    slug: 'word-chain',
+    category: 'verbal-memory',
+    difficulty: 'beginner',
+    description: 'Remember a growing list of words. Each round adds a new word to memorize. Builds verbal working memory.',
+    benefits: ['Improves verbal memory', 'Enhances language processing', 'Builds semantic associations'],
+    rules: ['New word appears each round', 'Recall all words seen so far', 'One mistake and the round ends'],
+    gameType: 'verbal',
+    gridSize: 0,
+    timeLimit: 0,
+    maxLevel: 30,
+  },
+  {
+    name: 'Pattern Mirror',
+    slug: 'pattern-mirror',
+    category: 'visual-memory',
+    difficulty: 'intermediate',
+    description: 'A pattern flashes on one side of the grid. Reproduce it as a mirror image. Trains spatial transformation.',
+    benefits: ['Improves spatial reasoning', 'Enhances mental rotation ability', 'Builds visual processing speed'],
+    rules: ['Observe the pattern on the left', 'Recreate the mirror image on the right', 'Speed and accuracy both count'],
+    gameType: 'pattern',
+    gridSize: 6,
+    timeLimit: 60,
+    maxLevel: 12,
+  },
+  {
+    name: 'N-Back Challenge',
+    slug: 'n-back',
+    category: 'cognitive-training',
+    difficulty: 'advanced',
+    description: 'The gold standard of cognitive training. Remember if the current stimulus matches one N steps back. Proven to improve fluid intelligence.',
+    benefits: ['Increases fluid intelligence', 'Strengthens executive function', 'Improves attention control'],
+    rules: ['Watch each stimulus appear', 'Press match if it appeared N steps ago', 'Difficulty increases with higher N'],
+    gameType: 'nback',
+    gridSize: 3,
+    timeLimit: 120,
+    maxLevel: 8,
+  },
+  {
+    name: 'Face & Name',
+    slug: 'face-name',
+    category: 'social-memory',
+    difficulty: 'intermediate',
+    description: 'Associate faces with names and recall them later. A practical memory skill used daily in social situations.',
+    benefits: ['Improves face-name association', 'Enhances social memory', 'Builds mnemonic strategies'],
+    rules: ['Study each face-name pair', 'Later, match faces to correct names', 'Use memory techniques for best results'],
+    gameType: 'association',
+    gridSize: 0,
+    timeLimit: 90,
+    maxLevel: 10,
+  },
+  {
+    name: 'Speed Sort',
+    slug: 'speed-sort',
+    category: 'processing-speed',
+    difficulty: 'beginner',
+    description: 'Sort items into categories as fast as possible. Trains processing speed and decision-making under time pressure.',
+    benefits: ['Increases processing speed', 'Improves decision making', 'Enhances cognitive flexibility'],
+    rules: ['Items appear one at a time', 'Sort into the correct category', 'Speed and accuracy both score points'],
+    gameType: 'sort',
+    gridSize: 0,
+    timeLimit: 60,
+    maxLevel: 15,
+  },
+  {
+    name: 'Spatial Navigator',
+    slug: 'spatial-navigator',
+    category: 'spatial-memory',
+    difficulty: 'intermediate',
+    description: 'Remember a path through a grid and navigate it from memory. Builds spatial navigation skills linked to hippocampal health.',
+    benefits: ['Strengthens spatial navigation', 'Supports hippocampal function', 'Improves route memory'],
+    rules: ['Watch the path highlight', 'Navigate the same path from memory', 'Paths get longer each level'],
+    gameType: 'path',
+    gridSize: 6,
+    timeLimit: 90,
+    maxLevel: 12,
+  },
+  {
+    name: 'Dual Task',
+    slug: 'dual-task',
+    category: 'cognitive-training',
+    difficulty: 'advanced',
+    description: 'Perform two memory tasks simultaneously. Trains divided attention and multitasking ability — critical for modern life.',
+    benefits: ['Improves multitasking ability', 'Strengthens divided attention', 'Enhances cognitive control'],
+    rules: ['Track visual position AND audio sequence', 'Respond to matches in both channels', 'Difficulty scales independently'],
+    gameType: 'dual',
+    gridSize: 3,
+    timeLimit: 120,
+    maxLevel: 10,
+  },
+]
+
+async function main() {
+  console.log('Seeding MemoryForge games...')
+  for (const game of games) {
+    await prisma.game.upsert({
+      where: { slug: game.slug },
+      update: game,
+      create: game,
+    })
+    console.log(`  ✓ ${game.name}`)
+  }
+  console.log(`Seeded ${games.length} games`)
+}
+
+main()
+  .catch((e) => { console.error(e); process.exit(1) })
+  .finally(() => prisma.$disconnect())
