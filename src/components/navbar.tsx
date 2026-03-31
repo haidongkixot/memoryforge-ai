@@ -14,10 +14,14 @@ export default function Navbar() {
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-sm">MF</div>
             <span className="text-white font-semibold text-lg">MemoryForge</span>
+            <span className="text-gray-500 text-xs hidden lg:inline ml-1">by PeeTeeAI</span>
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <Link href="/dashboard" className="text-gray-300 hover:text-indigo-400 transition-colors text-sm">Dashboard</Link>
             <Link href="/library" className="text-gray-300 hover:text-indigo-400 transition-colors text-sm">Games</Link>
+            <Link href="/quests" className="text-gray-300 hover:text-indigo-400 transition-colors text-sm">Quests</Link>
+            <Link href="/leaderboard" className="text-gray-300 hover:text-indigo-400 transition-colors text-sm">Leaderboard</Link>
+            <Link href="/coach" className="text-gray-300 hover:text-indigo-400 transition-colors text-sm">Coach</Link>
             <Link href="/progress" className="text-gray-300 hover:text-indigo-400 transition-colors text-sm">Progress</Link>
             {session ? (
               <button onClick={() => signOut()} className="text-gray-400 hover:text-white text-sm">Sign Out</button>
@@ -35,6 +39,9 @@ export default function Navbar() {
           <div className="md:hidden pb-4 space-y-2">
             <Link href="/dashboard" className="block text-gray-300 hover:text-indigo-400 py-1">Dashboard</Link>
             <Link href="/library" className="block text-gray-300 hover:text-indigo-400 py-1">Games</Link>
+            <Link href="/quests" className="block text-gray-300 hover:text-indigo-400 py-1">Quests</Link>
+            <Link href="/leaderboard" className="block text-gray-300 hover:text-indigo-400 py-1">Leaderboard</Link>
+            <Link href="/coach" className="block text-gray-300 hover:text-indigo-400 py-1">Coach</Link>
             <Link href="/progress" className="block text-gray-300 hover:text-indigo-400 py-1">Progress</Link>
           </div>
         )}

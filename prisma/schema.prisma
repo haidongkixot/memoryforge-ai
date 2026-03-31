@@ -16,12 +16,22 @@ model User {
   password      String?
   image         String?
   role          String    @default("user")
+  status        String    @default("active")
+  statusNote    String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      AuthSession[]
   gameSessions  GameSession[]
   achievements  UserAchievement[]
+  xpLedger      XpLedger[]
+  streaks       Streak[]
+  dailyStats    DailyStat[]
+  memoryProfiles MemoryProfile[]
+  coachMessages CoachMessage[]
+  trainingPlans TrainingPlan[]
+  analyticsEvents AnalyticsEvent[]
+  activityLogs  ActivityLog[]
 }
 
 model Account {
@@ -102,4 +112,171 @@ model UserAchievement {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@unique([userId, achievement])
   @@index([userId])
+}
+
+// ── XP & Gamification ──
+
+model XpLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+}
+
+model Streak {
+  id            String   @id @default(cuid())
+  userId        String
+  type          String   @default("daily_play")
+  currentCount  Int      @default(0)
+  longestCount  Int      @default(0)
+  lastActiveAt  DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, type])
+}
+
+model DailyStat {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime @db.Date
+  gamesPlayed    Int      @default(0)
+  totalScore     Int      @default(0)
+  totalXp        Int      @default(0)
+  avgAccuracy    Float    @default(0)
+  bestAccuracy   Float    @default(0)
+  totalDuration  Int      @default(0)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, date])
+}
+
+// ── Memory Training ──
+
+model MemoryProfile {
+  id               String   @id @default(cuid())
+  userId           String
+  memoryType       String
+  strengthScore    Float    @default(50)
+  lastAssessedAt   DateTime @default(now())
+  improvementRate  Float    @default(0)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, memoryType])
+}
+
+model MemoryTechnique {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  category    String
+  description String   @db.Text
+  steps       String[]
+  difficulty  String   @default("beginner")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([category])
+}
+
+model TrainingPlan {
+  id          String              @id @default(cuid())
+  userId      String
+  name        String
+  goal        String
+  status      String              @default("active")
+  startDate   DateTime            @default(now())
+  endDate     DateTime?
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       TrainingPlanItem[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  @@index([userId, status])
+}
+
+model TrainingPlanItem {
+  id             String       @id @default(cuid())
+  planId         String
+  dayNumber      Int
+  gameId         String?
+  techniqueSlug  String?
+  targetScore    Int?
+  completed      Boolean      @default(false)
+  completedAt    DateTime?
+  plan           TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  @@index([planId, dayNumber])
+}
+
+// ── AI Coach ──
+
+model CoachMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String
+  content   String   @db.Text
+  context   Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
+}
+
+model CoachInsight {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  description String   @db.Text
+  conditions  Json
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  @@index([type, isActive])
+}
+
+// ── Analytics & Logging ──
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  userId     String?
+  event      String
+  category   String
+  properties Json?
+  sessionId  String?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([event, createdAt])
+  @@index([userId, createdAt])
+  @@index([category, createdAt])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String
+  message   String   @db.Text
+  context   Json?
+  source    String?
+  createdAt DateTime @default(now())
+  @@index([level, createdAt])
+  @@index([source, createdAt])
+}
+
+model AppConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  label     String?
+  updatedAt DateTime @updatedAt
 }
