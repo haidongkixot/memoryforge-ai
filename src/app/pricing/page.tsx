@@ -46,18 +46,18 @@ export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <nav className="border-b border-indigo-500/20 bg-gray-900">
+    <div className="min-h-screen bg-[#F8F9FE]">
+      <nav className="border-b border-gray-100 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[#593CC8] flex items-center justify-center text-white font-bold text-sm">
               MF
             </div>
-            <span className="text-white font-semibold text-lg">MemoryForge</span>
+            <span className="text-[#593CC8] font-semibold text-lg">MemoryForge</span>
           </Link>
           <Link
             href="/login"
-            className="text-gray-300 hover:text-white text-sm transition-colors"
+            className="text-[#6B7280] hover:text-[#593CC8] text-sm transition-colors font-medium"
           >
             Sign In
           </Link>
@@ -66,26 +66,26 @@ export default function PricingPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-[#593CC8] mb-4">Simple, Transparent Pricing</h1>
+          <p className="text-[#6B7280] text-lg max-w-2xl mx-auto">
             Start training your memory for free. Upgrade to Pro when you are ready for personalized AI coaching and advanced training.
           </p>
           <div className="flex items-center justify-center gap-3 mt-8">
-            <span className={`text-sm ${!annual ? 'text-white' : 'text-gray-500'}`}>Monthly</span>
+            <span className={`text-sm font-medium ${!annual ? 'text-[#1f2937]' : 'text-[#6B7280]'}`}>Monthly</span>
             <button
               onClick={() => setAnnual(!annual)}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                annual ? 'bg-indigo-500' : 'bg-gray-700'
+                annual ? 'bg-[#593CC8]' : 'bg-gray-200'
               }`}
             >
               <div
-                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${
                   annual ? 'translate-x-6' : 'translate-x-0.5'
                 }`}
               />
             </button>
-            <span className={`text-sm ${annual ? 'text-white' : 'text-gray-500'}`}>
-              Annual <span className="text-green-400 text-xs font-medium">Save 20%</span>
+            <span className={`text-sm font-medium ${annual ? 'text-[#1f2937]' : 'text-[#6B7280]'}`}>
+              Annual <span className="text-[#ABF263] text-xs font-bold bg-[#ABF263]/20 px-2 py-0.5 rounded-full">Save 20%</span>
             </span>
           </div>
         </div>
@@ -94,39 +94,39 @@ export default function PricingPage() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-2xl p-8 ${
+              className={`rounded-2xl p-8 relative ${
                 plan.highlighted
-                  ? 'bg-gray-900 border-2 border-indigo-500 relative'
-                  : 'bg-gray-900 border border-gray-800'
+                  ? 'bg-white border-2 border-[#593CC8] shadow-md'
+                  : 'bg-white border border-gray-100 shadow-sm'
               }`}
             >
               {plan.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#593CC8] text-white text-xs font-bold px-4 py-1 rounded-full">
                   MOST POPULAR
                 </div>
               )}
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-white">{plan.name}</h2>
-                <p className="text-gray-400 text-sm mt-1">{plan.description}</p>
+                <h2 className="text-2xl font-bold text-[#593CC8]">{plan.name}</h2>
+                <p className="text-[#6B7280] text-sm mt-1">{plan.description}</p>
               </div>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-white">
+                <span className="text-4xl font-bold text-[#1f2937]">
                   {plan.price === '$0'
                     ? '$0'
                     : annual
                     ? '$3.99'
                     : plan.price}
                 </span>
-                <span className="text-gray-400 text-sm">
+                <span className="text-[#6B7280] text-sm">
                   {plan.price === '$0' ? ' forever' : annual ? '/month (billed yearly)' : plan.period}
                 </span>
               </div>
               <Link
                 href={plan.href}
-                className={`block w-full text-center py-3 rounded-xl font-medium transition-colors text-sm ${
+                className={`block w-full text-center py-3 rounded-full font-semibold transition-colors text-sm ${
                   plan.highlighted
-                    ? 'bg-indigo-500 hover:bg-indigo-600 text-white'
-                    : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-700'
+                    ? 'bg-[#593CC8] hover:bg-[#4a30a8] text-white shadow-[0_4px_15px_rgba(89,60,200,0.25)]'
+                    : 'bg-[#F8F9FE] hover:bg-gray-100 text-[#1f2937] border border-gray-200'
                 }`}
               >
                 {plan.cta}
@@ -134,18 +134,18 @@ export default function PricingPage() {
               <div className="mt-8 space-y-3">
                 {plan.features.map((f) => (
                   <div key={f} className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-[#5DEAEA] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-gray-300 text-sm">{f}</span>
+                    <span className="text-[#1f2937] text-sm">{f}</span>
                   </div>
                 ))}
                 {plan.limitations.map((l) => (
                   <div key={l} className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="text-gray-500 text-sm">{l}</span>
+                    <span className="text-[#6B7280] text-sm">{l}</span>
                   </div>
                 ))}
               </div>
@@ -154,7 +154,7 @@ export default function PricingPage() {
         </div>
 
         <div className="mt-16 text-center">
-          <h3 className="text-xl font-semibold text-white mb-4">Frequently Asked Questions</h3>
+          <h3 className="text-xl font-semibold text-[#593CC8] mb-4">Frequently Asked Questions</h3>
           <div className="max-w-2xl mx-auto space-y-6 text-left">
             {[
               {
@@ -170,9 +170,9 @@ export default function PricingPage() {
                 a: 'The AI Coach analyzes your performance data and provides personalized memory training advice, technique recommendations, and progress insights.',
               },
             ].map((faq) => (
-              <div key={faq.q} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <h4 className="text-white font-medium mb-2">{faq.q}</h4>
-                <p className="text-gray-400 text-sm">{faq.a}</p>
+              <div key={faq.q} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+                <h4 className="text-[#593CC8] font-semibold mb-2">{faq.q}</h4>
+                <p className="text-[#6B7280] text-sm">{faq.a}</p>
               </div>
             ))}
           </div>

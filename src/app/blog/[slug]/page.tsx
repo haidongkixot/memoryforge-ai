@@ -117,13 +117,15 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   if (!post) notFound()
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-[#F8F9FE]">
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <Link href="/blog" className="text-indigo-400 hover:text-indigo-300 text-sm mb-8 block">← Back to Blog</Link>
-        <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">{post.category}</span>
-        <h1 className="text-4xl font-bold text-white mt-2 mb-3">{post.title}</h1>
-        <p className="text-gray-500 text-sm mb-10">{post.date}</p>
-        <div className="text-gray-300 leading-relaxed space-y-4 whitespace-pre-wrap">{post.content}</div>
+        <Link href="/blog" className="text-[#593CC8] hover:text-[#4a30a8] text-sm mb-8 block font-medium">← Back to Blog</Link>
+        <span className="text-xs font-semibold text-[#5DEAEA] uppercase tracking-wider bg-[#5DEAEA]/10 px-3 py-1 rounded-full">{post.category}</span>
+        <h1 className="text-4xl font-bold text-[#593CC8] mt-4 mb-3">{post.title}</h1>
+        <p className="text-[#6B7280] text-sm mb-10">{post.date}</p>
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+          <div className="text-[#1f2937] leading-relaxed space-y-4 whitespace-pre-wrap">{post.content}</div>
+        </div>
       </div>
     </div>
   )

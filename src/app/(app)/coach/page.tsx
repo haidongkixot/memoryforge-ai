@@ -68,23 +68,23 @@ export default function CoachPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       <div className="mb-4">
-        <h1 className="text-3xl font-bold text-[#1f2937]">AI Memory Coach</h1>
+        <h1 className="text-3xl font-bold text-[#593CC8]">AI Memory Coach</h1>
         <p className="text-[#6B7280] mt-1">Get personalized advice on memory training techniques</p>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
         {loadingHistory ? (
           <div className="flex items-center justify-center h-32">
-            <div className="w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-[#593CC8] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#EEF2FF] flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-[#6366f1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-16 h-16 rounded-2xl bg-[#5DEAEA]/10 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-[#593CC8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-[#1f2937] mb-2">Ask your Memory Coach</h2>
+            <h2 className="text-xl font-semibold text-[#593CC8] mb-2">Ask your Memory Coach</h2>
             <p className="text-[#6B7280] text-sm max-w-md mb-6">
               I can help with memory techniques, training plans, game strategies, and cognitive science tips.
             </p>
@@ -93,7 +93,7 @@ export default function CoachPage() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="text-left text-sm bg-white border border-[#E5E7EB] hover:border-[#6366f1]/50 rounded-2xl px-4 py-3 text-[#4B5563] hover:text-[#6366f1] transition-all"
+                  className="text-left text-sm bg-white border border-gray-100 hover:border-[#593CC8]/40 rounded-2xl px-4 py-3 text-[#4B5563] hover:text-[#593CC8] transition-all shadow-sm"
                 >
                   {s}
                 </button>
@@ -106,8 +106,8 @@ export default function CoachPage() {
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap ${
                   m.role === 'user'
-                    ? 'bg-[#6366f1] text-white'
-                    : 'bg-white border border-[#E5E7EB] text-[#4B5563]'
+                    ? 'bg-[#593CC8] text-white'
+                    : 'bg-white border border-gray-100 text-[#4B5563] shadow-sm'
                 }`}
               >
                 {m.content}
@@ -117,11 +117,11 @@ export default function CoachPage() {
         )}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-white border border-[#E5E7EB] rounded-2xl px-4 py-3">
+            <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm">
               <div className="flex gap-1">
-                <span className="w-2 h-2 bg-[#6366f1] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 bg-[#6366f1] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 bg-[#6366f1] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-2 h-2 bg-[#593CC8] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 bg-[#593CC8] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 bg-[#593CC8] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function CoachPage() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-[#E5E7EB] pt-4">
+      <div className="border-t border-gray-100 pt-4">
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -142,13 +142,13 @@ export default function CoachPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about memory techniques, training tips..."
-            className="flex-1 bg-white border border-[#E5E7EB] focus:border-[#6366f1] rounded-xl px-4 py-3 text-[#1f2937] placeholder-[#9CA3AF] outline-none transition-colors text-sm"
+            className="flex-1 bg-white border border-gray-100 focus:border-[#593CC8] rounded-xl px-4 py-3 text-[#1f2937] placeholder-[#9CA3AF] outline-none transition-colors text-sm shadow-sm"
             disabled={loading}
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="bg-[#6366f1] hover:bg-[#5558e6] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-full font-semibold transition-colors text-sm shadow-[0_4px_15px_rgba(99,102,241,0.25)]"
+            className="bg-[#593CC8] hover:bg-[#4a30a8] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-full font-semibold transition-colors text-sm shadow-[0_4px_15px_rgba(89,60,200,0.25)]"
           >
             Send
           </button>

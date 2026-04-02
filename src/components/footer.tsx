@@ -28,12 +28,12 @@ const footerLinks = {
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1f2937] border-t border-[#374151]">
+    <footer className="bg-white border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="text-[#6366f1] font-semibold text-sm uppercase tracking-wider mb-4">
+              <h3 className="text-[#593CC8] font-semibold text-sm uppercase tracking-wider mb-4">
                 {category}
               </h3>
               <ul className="space-y-2">
@@ -44,14 +44,14 @@ export default function Footer() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-[#5DEAEA] transition-colors text-sm"
+                        className="text-[#6B7280] hover:text-[#593CC8] transition-colors text-sm"
                       >
                         {link.name}
                       </a>
                     ) : (
                       <Link
                         href={link.href}
-                        className="text-gray-400 hover:text-[#5DEAEA] transition-colors text-sm"
+                        className="text-[#6B7280] hover:text-[#593CC8] transition-colors text-sm"
                       >
                         {link.name}
                       </Link>
@@ -63,18 +63,18 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-[#374151]">
+        <div className="mt-12 pt-8 border-t border-gray-100">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#6366f1] flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-xl bg-[#593CC8] flex items-center justify-center text-white font-bold text-sm">
                 MF
               </div>
               <div>
-                <span className="text-white font-semibold">MemoryForge AI</span>
-                <span className="text-gray-400 text-sm ml-2">A PeeTeeAI Product</span>
+                <span className="text-[#593CC8] font-semibold">MemoryForge AI</span>
+                <span className="text-[#6B7280] text-sm ml-2">A PeeTeeAI Product</span>
               </div>
             </div>
-            <p className="text-gray-400 text-sm">&copy; 2026 PeeTeeAI. All rights reserved.</p>
+            <p className="text-[#6B7280] text-sm">&copy; 2026 PeeTeeAI. All rights reserved.</p>
           </div>
         </div>
       </div>

@@ -37,26 +37,26 @@ export default function QuestsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-[#1f2937]">Daily Quests</h1>
+        <h1 className="text-3xl font-bold text-[#593CC8]">Daily Quests</h1>
         <p className="text-[#6B7280] mt-1">Complete quests to earn bonus XP and build your skills</p>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white border border-[#E5E7EB] rounded-2xl p-6 animate-pulse h-36" />
+            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-6 animate-pulse h-36 shadow-sm" />
           ))}
         </div>
       ) : quests.length === 0 ? (
-        <div className="bg-white border border-[#E5E7EB] rounded-2xl p-12 text-center shadow-[0_2px_15px_rgba(99,102,241,0.04)]">
+        <div className="bg-white border border-gray-100 rounded-2xl p-12 text-center shadow-sm">
           <div className="text-4xl mb-3">🎯</div>
-          <h2 className="text-xl font-semibold text-[#1f2937] mb-2">No Quests Available</h2>
+          <h2 className="text-xl font-semibold text-[#593CC8] mb-2">No Quests Available</h2>
           <p className="text-[#6B7280] text-sm mb-4">
             Play a few games first and daily quests will appear based on your activity.
           </p>
           <Link
             href="/library"
-            className="inline-block bg-[#6366f1] hover:bg-[#5558e6] text-white px-6 py-3 rounded-full font-semibold transition-colors text-sm shadow-[0_4px_15px_rgba(99,102,241,0.25)]"
+            className="inline-block bg-[#593CC8] hover:bg-[#4a30a8] text-white px-6 py-3 rounded-full font-semibold transition-colors text-sm shadow-[0_4px_15px_rgba(89,60,200,0.25)]"
           >
             Browse Games
           </Link>
@@ -67,8 +67,8 @@ export default function QuestsPage() {
             {quests.map((q) => (
               <div
                 key={q.id}
-                className={`bg-white border rounded-2xl p-6 transition-all shadow-[0_2px_15px_rgba(99,102,241,0.04)] ${
-                  q.completed ? 'border-[#ABF263]/50 bg-[#ABF263]/5' : 'border-[#E5E7EB] hover:border-[#6366f1]/30'
+                className={`bg-white border rounded-2xl p-6 transition-all shadow-sm ${
+                  q.completed ? 'border-[#ABF263]/50 bg-[#ABF263]/5' : 'border-gray-100 hover:border-[#593CC8]/20'
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
@@ -79,7 +79,7 @@ export default function QuestsPage() {
                       <p className="text-[#6B7280] text-sm">{q.description}</p>
                     </div>
                   </div>
-                  <span className="text-[#6366f1] text-sm font-medium whitespace-nowrap ml-2">
+                  <span className="text-[#593CC8] text-sm font-medium whitespace-nowrap ml-2">
                     +{q.xpReward} XP
                   </span>
                 </div>
@@ -91,10 +91,10 @@ export default function QuestsPage() {
                       {q.progress}/{q.target}
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-[#E5E7EB] rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        q.completed ? 'bg-[#ABF263]' : 'bg-gradient-to-r from-[#6366f1] to-[#5DEAEA]'
+                        q.completed ? 'bg-[#ABF263]' : 'bg-gradient-to-r from-[#593CC8] to-[#5DEAEA]'
                       }`}
                       style={{ width: `${Math.min(100, (q.progress / q.target) * 100)}%` }}
                     />
@@ -104,13 +104,13 @@ export default function QuestsPage() {
                 {!q.completed && q.gameSlug && (
                   <Link
                     href={`/practice/${q.gameSlug}`}
-                    className="inline-block mt-4 text-sm text-[#6366f1] hover:text-[#5558e6] transition-colors font-medium"
+                    className="inline-block mt-4 text-sm text-[#593CC8] hover:text-[#4a30a8] transition-colors font-medium"
                   >
                     Play now &rarr;
                   </Link>
                 )}
                 {q.completed && (
-                  <div className="mt-4 text-sm text-green-500 font-medium flex items-center gap-1">
+                  <div className="mt-4 text-sm text-[#ABF263] font-medium flex items-center gap-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
@@ -125,7 +125,7 @@ export default function QuestsPage() {
             ))}
           </div>
 
-          <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6">
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
             <p className="text-[#6B7280] text-sm text-center">
               Quests refresh daily. Complete them all for bonus streak rewards!
             </p>

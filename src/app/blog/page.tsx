@@ -9,23 +9,23 @@ const BLOG_POSTS = [
 
 export default function BlogPage() {
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-[#F8F9FE]">
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-3">MemoryForge Blog</h1>
-          <p className="text-gray-400">Memory science, training techniques, and cognitive performance insights</p>
+          <h1 className="text-4xl font-bold text-[#593CC8] mb-3">MemoryForge Blog</h1>
+          <p className="text-[#6B7280]">Memory science, training techniques, and cognitive performance insights</p>
         </div>
         <div className="grid gap-6">
           {BLOG_POSTS.map(post => (
             <Link key={post.slug} href={`/blog/${post.slug}`}
-              className="block bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-indigo-500/40 transition-colors group">
+              className="block bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:border-[#593CC8]/30 hover:shadow-md transition-all group">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">{post.category}</span>
-                  <h2 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors mt-1 mb-2">{post.title}</h2>
-                  <p className="text-gray-400 text-sm">{post.excerpt}</p>
+                  <span className="text-xs font-semibold text-[#5DEAEA] uppercase tracking-wider bg-[#5DEAEA]/10 px-2 py-0.5 rounded-full">{post.category}</span>
+                  <h2 className="text-xl font-bold text-[#1f2937] group-hover:text-[#593CC8] transition-colors mt-2 mb-2">{post.title}</h2>
+                  <p className="text-[#6B7280] text-sm">{post.excerpt}</p>
                 </div>
-                <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0 mt-1">{post.date}</span>
+                <span className="text-xs text-[#6B7280] whitespace-nowrap flex-shrink-0 mt-1">{post.date}</span>
               </div>
             </Link>
           ))}
