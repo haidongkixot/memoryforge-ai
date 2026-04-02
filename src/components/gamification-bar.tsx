@@ -16,28 +16,28 @@ export default function GamificationBar() {
   if (!stats) return null
 
   return (
-    <div className="bg-gray-900 border-b border-gray-800 px-4 py-2">
+    <div className="bg-white border-b border-[#E5E7EB] px-4 py-2">
       <div className="max-w-7xl mx-auto flex items-center gap-6 text-sm">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/50 flex items-center justify-center">
-            <span className="text-indigo-400 font-bold text-xs">{stats.level}</span>
+          <div className="w-8 h-8 rounded-full bg-[#EEF2FF] border border-[#6366f1]/30 flex items-center justify-center">
+            <span className="text-[#6366f1] font-bold text-xs">{stats.level}</span>
           </div>
-          <span className="text-gray-500 text-xs hidden sm:block">Level {stats.level}</span>
+          <span className="text-[#6B7280] text-xs hidden sm:block">Level {stats.level}</span>
         </div>
         <div className="flex-1 max-w-xs flex items-center gap-2">
-          <span className="text-gray-500 text-xs whitespace-nowrap">{stats.xpInCurrentLevel}/{stats.xpForNextLevel} XP</span>
-          <div className="flex-1 bg-gray-800 rounded-full h-1.5">
-            <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${stats.progressPercent}%` }} />
+          <span className="text-[#6B7280] text-xs whitespace-nowrap">{stats.xpInCurrentLevel}/{stats.xpForNextLevel} XP</span>
+          <div className="flex-1 bg-[#E5E7EB] rounded-full h-1.5">
+            <div className="bg-gradient-to-r from-[#6366f1] to-[#5DEAEA] h-1.5 rounded-full transition-all duration-500" style={{ width: `${stats.progressPercent}%` }} />
           </div>
         </div>
         {stats.currentStreak > 0 && (
-          <Link href="/quests" className="flex items-center gap-1 text-orange-400 hover:text-orange-300 transition-colors">
-            <span>🔥</span><span className="font-semibold text-xs">{stats.currentStreak}d</span>
-            <span className="text-gray-500 text-xs hidden sm:block">streak</span>
+          <Link href="/quests" className="flex items-center gap-1 text-[#F97316] hover:text-[#EA580C] transition-colors">
+            <span>🔥</span><span className="font-bold text-xs">{stats.currentStreak}d</span>
+            <span className="text-[#6B7280] text-xs hidden sm:block">streak</span>
           </Link>
         )}
-        <Link href="/quests" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors hidden sm:block">Daily Quests →</Link>
-        <Link href="/leaderboard" className="text-xs text-gray-500 hover:text-gray-300 transition-colors hidden sm:block">🏆 Leaderboard</Link>
+        <Link href="/quests" className="text-xs text-[#6366f1] hover:text-[#5558e6] transition-colors hidden sm:block font-medium">Daily Quests &rarr;</Link>
+        <Link href="/leaderboard" className="text-xs text-[#6B7280] hover:text-[#6366f1] transition-colors hidden sm:block">🏆 Leaderboard</Link>
       </div>
     </div>
   )

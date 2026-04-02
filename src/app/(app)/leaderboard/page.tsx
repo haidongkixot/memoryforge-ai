@@ -30,18 +30,18 @@ export default function LeaderboardPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
-          <p className="text-gray-400 mt-1">Top memory athletes ranked by XP</p>
+          <h1 className="text-3xl font-bold text-[#1f2937]">Leaderboard</h1>
+          <p className="text-[#6B7280] mt-1">Top memory athletes ranked by XP</p>
         </div>
         <div className="flex gap-2">
           {(['all', 'month', 'week'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 period === p
-                  ? 'bg-indigo-500 text-white'
-                  : 'bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:border-indigo-500/50'
+                  ? 'bg-[#6366f1] text-white shadow-[0_4px_15px_rgba(99,102,241,0.25)]'
+                  : 'bg-white border border-[#E5E7EB] text-[#6B7280] hover:text-[#6366f1] hover:border-[#6366f1]/50'
               }`}
             >
               {p === 'all' ? 'All Time' : p === 'month' ? 'This Month' : 'This Week'}
@@ -50,8 +50,8 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-12 gap-2 px-6 py-3 bg-gray-900/50 border-b border-gray-800 text-xs font-medium text-gray-500 uppercase tracking-wider">
+      <div className="bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-[0_2px_15px_rgba(99,102,241,0.04)]">
+        <div className="grid grid-cols-12 gap-2 px-6 py-3 bg-[#F8FAFC] border-b border-[#E5E7EB] text-xs font-medium text-[#6B7280] uppercase tracking-wider">
           <div className="col-span-1">Rank</div>
           <div className="col-span-4">Player</div>
           <div className="col-span-2 text-right">XP</div>
@@ -63,13 +63,13 @@ export default function LeaderboardPage() {
         {loading ? (
           <div className="space-y-0">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="px-6 py-4 border-b border-gray-800/50">
-                <div className="h-5 bg-gray-800 rounded animate-pulse w-full" />
+              <div key={i} className="px-6 py-4 border-b border-[#E5E7EB]/50">
+                <div className="h-5 bg-[#F3F4F6] rounded animate-pulse w-full" />
               </div>
             ))}
           </div>
         ) : leaders.length === 0 ? (
-          <div className="px-6 py-12 text-center text-gray-400">
+          <div className="px-6 py-12 text-center text-[#6B7280]">
             <p className="text-lg mb-1">No entries yet</p>
             <p className="text-sm">Play some games to appear on the leaderboard!</p>
           </div>
@@ -77,33 +77,33 @@ export default function LeaderboardPage() {
           leaders.map((entry) => (
             <div
               key={entry.rank}
-              className={`grid grid-cols-12 gap-2 px-6 py-4 border-b border-gray-800/50 items-center transition-colors hover:bg-gray-800/30 ${
-                entry.rank <= 3 ? 'bg-gray-800/20' : ''
+              className={`grid grid-cols-12 gap-2 px-6 py-4 border-b border-[#E5E7EB]/50 items-center transition-colors hover:bg-[#F8FAFC] ${
+                entry.rank <= 3 ? 'bg-[#EEF2FF]/30' : ''
               }`}
             >
               <div className="col-span-1">
                 {entry.rank <= 3 ? (
-                  <span className="text-lg" style={{ color: medals[entry.rank] }}>
+                  <span className="text-lg font-bold" style={{ color: medals[entry.rank] }}>
                     {entry.rank === 1 ? '1st' : entry.rank === 2 ? '2nd' : '3rd'}
                   </span>
                 ) : (
-                  <span className="text-gray-500 font-medium">{entry.rank}</span>
+                  <span className="text-[#9CA3AF] font-medium">{entry.rank}</span>
                 )}
               </div>
               <div className="col-span-4">
-                <span className="text-white font-medium">{entry.name || 'Anonymous'}</span>
+                <span className="text-[#1f2937] font-medium">{entry.name || 'Anonymous'}</span>
               </div>
               <div className="col-span-2 text-right">
-                <span className="text-indigo-400 font-semibold">{entry.totalXp.toLocaleString()}</span>
+                <span className="text-[#6366f1] font-semibold">{entry.totalXp.toLocaleString()}</span>
               </div>
               <div className="col-span-2 text-right">
-                <span className="text-gray-300">Lv. {entry.level}</span>
+                <span className="text-[#4B5563]">Lv. {entry.level}</span>
               </div>
               <div className="col-span-1 text-right hidden sm:block">
-                <span className="text-gray-400">{entry.gamesPlayed}</span>
+                <span className="text-[#6B7280]">{entry.gamesPlayed}</span>
               </div>
               <div className="col-span-2 text-right hidden sm:block">
-                <span className="text-gray-400">{entry.avgAccuracy}%</span>
+                <span className="text-[#6B7280]">{entry.avgAccuracy}%</span>
               </div>
             </div>
           ))

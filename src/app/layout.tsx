@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Quicksand, Inter } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const quicksand = Quicksand({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 export const metadata: Metadata = {
   title: 'MemoryForge AI - Cognitive Training',
@@ -13,8 +13,8 @@ import Footer from '@/components/footer'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} bg-gray-950 text-gray-100 min-h-screen`}>
+    <html lang="en">
+      <body className={`${quicksand.className} bg-[#F8FAFC] text-[#1f2937] min-h-screen`}>
         {children}
         <Footer />
       </body>

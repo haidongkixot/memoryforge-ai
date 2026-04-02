@@ -33,25 +33,25 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-gray-400 mt-1">Your cognitive training overview</p>
+        <h1 className="text-3xl font-bold text-[#1f2937]">Dashboard</h1>
+        <p className="text-[#6B7280] mt-1">Your cognitive training overview</p>
       </div>
 
       {stats ? (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {statCards.map(s => (
-              <div key={s.label} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+              <div key={s.label} className="bg-white border border-[#E5E7EB] rounded-2xl p-4 shadow-[0_2px_15px_rgba(99,102,241,0.04)]">
                 <div className="text-2xl mb-1">{s.icon}</div>
-                <div className="text-xl font-bold text-white">{s.value}</div>
-                <div className="text-xs text-gray-400">{s.label}</div>
+                <div className="text-xl font-bold text-[#1f2937]">{s.value}</div>
+                <div className="text-xs text-[#6B7280]">{s.label}</div>
               </div>
             ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Quick Play</h2>
+            <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-[0_2px_15px_rgba(99,102,241,0.04)]">
+              <h2 className="text-lg font-semibold text-[#1f2937] mb-4">Quick Play</h2>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { name: 'Card Match', slug: 'card-match', icon: '🃏' },
@@ -60,30 +60,30 @@ export default function DashboardPage() {
                   { name: 'Speed Sort', slug: 'speed-sort', icon: '⚡' },
                 ].map(g => (
                   <Link key={g.slug} href={`/practice/${g.slug}`}
-                    className="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-indigo-400/50 rounded-xl p-4 transition-all">
+                    className="bg-[#F8FAFC] hover:bg-[#EEF2FF] border border-[#E5E7EB] hover:border-[#6366f1]/50 rounded-2xl p-4 transition-all">
                     <div className="text-2xl mb-1">{g.icon}</div>
-                    <div className="text-sm font-medium text-white">{g.name}</div>
+                    <div className="text-sm font-medium text-[#1f2937]">{g.name}</div>
                   </Link>
                 ))}
               </div>
             </div>
 
-            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Recent Activity</h2>
+            <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-[0_2px_15px_rgba(99,102,241,0.04)]">
+              <h2 className="text-lg font-semibold text-[#1f2937] mb-4">Recent Activity</h2>
               {stats.recentSessions.length > 0 ? (
                 <div className="space-y-3">
                   {stats.recentSessions.slice(0, 5).map((s: any) => (
                     <div key={s.id} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-300">{s.gameName}</span>
+                      <span className="text-[#4B5563]">{s.gameName}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-indigo-400">Score: {s.score}</span>
-                        <span className="text-gray-500">{new Date(s.completedAt).toLocaleDateString()}</span>
+                        <span className="text-[#6366f1] font-medium">Score: {s.score}</span>
+                        <span className="text-[#9CA3AF]">{new Date(s.completedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm">No sessions yet. Start a game to begin tracking!</p>
+                <p className="text-[#6B7280] text-sm">No sessions yet. Start a game to begin tracking!</p>
               )}
             </div>
           </div>
@@ -91,16 +91,16 @@ export default function DashboardPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-4 animate-pulse h-24" />
+            <div key={i} className="bg-white border border-[#E5E7EB] rounded-2xl p-4 animate-pulse h-24" />
           ))}
         </div>
       )}
 
       <div className="flex gap-4">
-        <Link href="/library" className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium transition-colors">
+        <Link href="/library" className="bg-[#6366f1] hover:bg-[#5558e6] text-white px-6 py-3 rounded-full font-semibold transition-colors shadow-[0_4px_15px_rgba(99,102,241,0.25)]">
           Browse All Games
         </Link>
-        <Link href="/progress" className="border border-gray-700 hover:border-indigo-400 text-gray-300 px-6 py-3 rounded-xl transition-colors">
+        <Link href="/progress" className="border border-[#E5E7EB] hover:border-[#6366f1]/50 text-[#6B7280] hover:text-[#6366f1] px-6 py-3 rounded-full transition-colors font-medium">
           View Progress
         </Link>
       </div>
