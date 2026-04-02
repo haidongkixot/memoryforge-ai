@@ -10,7 +10,8 @@ const CATEGORIES = ['all', 'visual-memory', 'working-memory', 'verbal-memory', '
 const DIFFICULTIES = ['all', 'beginner', 'intermediate', 'advanced']
 const CATEGORY_ICONS: Record<string, string> = {
   'visual-memory': '👁️', 'working-memory': '🧠', 'verbal-memory': '📝', 'cognitive-training': '⚡',
-  'social-memory': '👥', 'processing-speed': '🏃', 'spatial-memory': '🗺️',
+  'social-memory': '👥', 'processing-speed': '⚡', 'spatial-memory': '🗺️',
+  'numerical-memory': '🔢', 'associative-memory': '👥',
 }
 
 export default function LibraryPage() {

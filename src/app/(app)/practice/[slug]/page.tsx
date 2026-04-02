@@ -3,6 +3,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import MemoryGrid from '@/components/memory-grid'
 import SequenceGame from '@/components/sequence-game'
+import WordMemoryGame from '@/components/word-memory-game'
+import NumberMatrixGame from '@/components/number-matrix-game'
+import FaceNameGame from '@/components/face-name-game'
+import SpeedTapGame from '@/components/speed-tap-game'
+import SpatialMemoryGame from '@/components/spatial-memory-game'
 
 interface Game {
   id: string; name: string; slug: string; category: string; difficulty: string; description: string
@@ -15,34 +20,63 @@ export default function PracticePage() {
   const [game, setGame] = useState<Game | null>(null)
   const [phase, setPhase] = useState<'info' | 'playing' | 'complete'>('info')
   const [level, setLevel] = useState(1)
-  const [result, setResult] = useState<{ score: number; moves?: number; time: number; level?: number } | null>(null)
+  const [result, setResult] = useState<{ score: number; moves?: number; time: number; level?: number; accuracy?: number } | null>(null)
   const [feedback, setFeedback] = useState('')
 
   useEffect(() => {
     fetch(`/api/exercises?slug=${params.slug}`).then(r => r.json()).then(d => { if (d && !d.error) setGame(d) })
   }, [params.slug])
 
-  const handleComplete = async (score: number, movesOrLevel: number, time: number) => {
-    setResult({ score, moves: movesOrLevel, time, level })
+  const handleComplete = async (score: number, movesOrLevel: number, accuracyOrTime: number, movesExtra?: number) => {
+    // Signature variants:
+    // MemoryGrid/SequenceGame: (score, moves/level, time)
+    // New games: (score, level, accuracy, moves)
+    const isNewSignature = movesExtra !== undefined
+    const time = isNewSignature ? accuracyOrTime : accuracyOrTime
+    const accuracy = isNewSignature ? accuracyOrTime : Math.min(100, Math.round(score / 10))
+    const moves = isNewSignature ? (movesExtra ?? 0) : movesOrLevel
+
+    setResult({ score, moves, time, level, accuracy })
     setPhase('complete')
 
-    // Save session
     if (game) {
       await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          gameId: game.id, score, level, accuracy: Math.min(100, Math.round(score / 10)),
-          duration: time, movesCount: movesOrLevel,
+          gameId: game.id, score, level, accuracy,
+          duration: time, movesCount: moves,
         }),
       }).catch(() => {})
 
-      // Get AI feedback
       fetch('/api/ai/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameName: game.name, score, level, accuracy: Math.min(100, Math.round(score / 10)), duration: time }),
+        body: JSON.stringify({ gameName: game.name, score, level, accuracy, duration: time }),
       }).then(r => r.json()).then(d => setFeedback(d.feedback)).catch(() => {})
+    }
+  }
+
+  const renderGame = () => {
+    if (!game) return null
+    switch (game.gameType) {
+      case 'match':
+        return <MemoryGrid gridSize={game.gridSize} level={level} onComplete={handleComplete} />
+      case 'sequence':
+      case 'nback':
+        return <SequenceGame gridSize={game.gridSize || 3} onComplete={handleComplete} />
+      case 'word':
+        return <WordMemoryGame game={game} onComplete={handleComplete} />
+      case 'matrix':
+        return <NumberMatrixGame game={game} onComplete={handleComplete} />
+      case 'association':
+        return <FaceNameGame game={game} onComplete={handleComplete} />
+      case 'speed':
+        return <SpeedTapGame game={game} onComplete={handleComplete} />
+      case 'spatial':
+        return <SpatialMemoryGame game={game} onComplete={handleComplete} />
+      default:
+        return <MemoryGrid gridSize={Math.min(game.gridSize || 4, 6)} level={level} onComplete={handleComplete} />
     }
   }
 
@@ -84,15 +118,7 @@ export default function PracticePage() {
           <div className="text-center mb-6">
             <h2 className="text-xl font-semibold text-[#593CC8]">{game.name}</h2>
           </div>
-          {(game.gameType === 'match') && (
-            <MemoryGrid gridSize={game.gridSize} level={level} onComplete={handleComplete} />
-          )}
-          {(game.gameType === 'sequence' || game.gameType === 'nback') && (
-            <SequenceGame gridSize={game.gridSize || 3} onComplete={handleComplete} />
-          )}
-          {!['match', 'sequence', 'nback'].includes(game.gameType) && (
-            <MemoryGrid gridSize={Math.min(game.gridSize || 4, 6)} level={level} onComplete={handleComplete} />
-          )}
+          {renderGame()}
         </div>
       )}
 
@@ -106,12 +132,12 @@ export default function PracticePage() {
               <div className="text-xs text-[#6B7280]">Score</div>
             </div>
             <div className="bg-[#F8F9FE] rounded-2xl p-4 border border-gray-100">
-              <div className="text-2xl font-bold text-[#593CC8]">{result.time}s</div>
-              <div className="text-xs text-[#6B7280]">Time</div>
+              <div className="text-2xl font-bold text-[#593CC8]">{result.accuracy ?? result.time}%</div>
+              <div className="text-xs text-[#6B7280]">{result.accuracy !== undefined ? 'Accuracy' : 'Time'}</div>
             </div>
             <div className="bg-[#F8F9FE] rounded-2xl p-4 border border-gray-100">
-              <div className="text-2xl font-bold text-[#593CC8]">{result.moves || result.level}</div>
-              <div className="text-xs text-[#6B7280]">{result.moves ? 'Moves' : 'Level'}</div>
+              <div className="text-2xl font-bold text-[#593CC8]">{result.moves ?? result.level}</div>
+              <div className="text-xs text-[#6B7280]">{result.moves !== undefined ? 'Moves' : 'Level'}</div>
             </div>
           </div>
           {feedback && (
