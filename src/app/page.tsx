@@ -1,6 +1,25 @@
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+
+async function getSiteSettings() {
+  try {
+    const settings = await prisma.appConfig.findMany({
+      where: { key: { in: ['hero_title', 'hero_description', 'stats_users', 'stats_sessions', 'stats_games'] } },
+    })
+    return Object.fromEntries(
+      settings.filter(s => s.value && s.value !== '').map((s) => [s.key, typeof s.value === 'string' ? s.value : JSON.stringify(s.value)])
+    )
+  } catch {
+    return {}
+  }
+}
+
+export default async function Home() {
+  const cms = await getSiteSettings()
+  const heroTitle = cms['hero_title'] || 'Train recall. Sharpen pattern recognition. Measure progress.'
+  const heroDescription = cms['hero_description'] || 'Structured exercises for working memory, sequencing, and spatial reasoning. No fluff — just measurable cognitive work.'
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Nav */}
@@ -26,10 +45,10 @@ export default function Home() {
               <div>
                 <p className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase mb-4">Cognitive Training Lab</p>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1f2937] tracking-tight leading-[1.1] mb-4">
-                  Train recall. Sharpen pattern<br />recognition. Measure progress.
+                  {heroTitle}
                 </h1>
                 <p className="text-[#6B7280] text-lg max-w-xl mb-10">
-                  Structured exercises for working memory, sequencing, and spatial reasoning. No fluff — just measurable cognitive work.
+                  {heroDescription}
                 </p>
 
                 {/* 3 Training Module Previews */}
