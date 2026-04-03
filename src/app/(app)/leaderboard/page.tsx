@@ -94,7 +94,7 @@ export default function LeaderboardPage() {
                 <span className="text-[#1f2937] font-medium">{entry.name || 'Anonymous'}</span>
               </div>
               <div className="col-span-2 text-right">
-                <span className="text-[#593CC8] font-semibold">{entry.totalXp.toLocaleString()}</span>
+                <span className="text-[#593CC8] font-semibold">{(entry.totalXp ?? 0).toLocaleString()}</span>
               </div>
               <div className="col-span-2 text-right">
                 <span className="text-[#4B5563]">Lv. {entry.level}</span>

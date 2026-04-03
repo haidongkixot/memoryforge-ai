@@ -18,11 +18,17 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
-    fetch('/api/progress').then(r => r.json()).then(setStats).catch(() => {})
+    fetch('/api/progress')
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to fetch')
+        return r.json()
+      })
+      .then(setStats)
+      .catch(() => {})
   }, [])
 
   const statCards = stats ? [
-    { label: 'Total Score', value: stats.totalScore.toLocaleString(), icon: '🏆' },
+    { label: 'Total Score', value: (stats.totalScore ?? 0).toLocaleString(), icon: '🏆' },
     { label: 'Sessions', value: stats.totalSessions, icon: '🎮' },
     { label: 'Avg Accuracy', value: `${stats.avgAccuracy}%`, icon: '🎯' },
     { label: 'Streak', value: `${stats.currentStreak} days`, icon: '🔥' },
