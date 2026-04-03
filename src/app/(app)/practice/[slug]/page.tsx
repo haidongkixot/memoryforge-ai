@@ -8,6 +8,7 @@ import NumberMatrixGame from '@/components/number-matrix-game'
 import FaceNameGame from '@/components/face-name-game'
 import SpeedTapGame from '@/components/speed-tap-game'
 import SpatialMemoryGame from '@/components/spatial-memory-game'
+import WordAssociationGame from '@/components/word-association-game'
 
 interface Game {
   id: string; name: string; slug: string; category: string; difficulty: string; description: string
@@ -71,6 +72,8 @@ export default function PracticePage() {
         return <NumberMatrixGame game={game} onComplete={handleComplete} />
       case 'association':
         return <FaceNameGame game={game} onComplete={handleComplete} />
+      case 'verbal':
+        return <WordAssociationGame game={game} onComplete={handleComplete} />
       case 'speed':
         return <SpeedTapGame game={game} onComplete={handleComplete} />
       case 'spatial':
