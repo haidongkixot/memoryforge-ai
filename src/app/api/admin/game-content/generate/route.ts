@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { aiGenerate } from '@/lib/ai-generate'
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
@@ -11,10 +12,7 @@ export async function POST(req: Request) {
 
   const { gameId, contentType, difficulty, theme } = await req.json()
 
-  // Build prompt based on contentType
   let prompt = ''
-  const systemPrompt = 'You are a game content designer for a brain training app. Return ONLY valid JSON, no markdown.'
-
   if (contentType === 'word_list') {
     prompt = `Generate a list of ${difficulty === 'advanced' ? '14' : difficulty === 'intermediate' ? '13' : '12'} words for a word memory game.
 Theme: ${theme || 'general vocabulary'}
@@ -37,39 +35,20 @@ Make names diverse and culturally varied.`
     return NextResponse.json({ error: 'Unsupported contentType' }, { status: 400 })
   }
 
-  // Call OpenAI
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
-  }
-
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: process.env.AI_MODEL ?? 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt },
-        ],
-        max_tokens: 1000,
-        temperature: 0.9,
-      }),
+    const { result } = await aiGenerate({
+      contentType: 'game_content',
+      userPrompt: prompt,
+      adminId: (session.user as any).id ?? session.user?.email ?? 'admin',
+      metadata: { gameId, contentType, difficulty, theme },
+      fallbackSystemPrompt: 'You are a game content designer for a brain training app. Return ONLY valid JSON, no markdown.',
     })
 
-    const data = await res.json()
-    const raw = data.choices?.[0]?.message?.content ?? '{}'
-    // Strip markdown code fences if present
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    const content = JSON.parse(cleaned)
-
-    // Save to DB
     const saved = await prisma.gameContent.create({
       data: {
         gameId,
         contentType,
-        content,
+        content: result,
         difficulty: difficulty || 'beginner',
         label: theme ? `${theme} (AI)` : `AI Generated - ${new Date().toLocaleDateString()}`,
       },
