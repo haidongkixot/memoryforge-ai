@@ -26,7 +26,8 @@ const defaultStats: Stats = {
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<Stats | null>(null)
+  const [stats, setStats] = useState<Stats>(defaultStats)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     fetch('/api/progress')
@@ -34,18 +35,30 @@ export default function DashboardPage() {
         if (!r.ok) throw new Error('Failed to fetch')
         return r.json()
       })
-      .then(data => setStats({ ...defaultStats, ...data, recentSessions: Array.isArray(data?.recentSessions) ? data.recentSessions : [] }))
+      .then(data => {
+        setStats({
+          totalSessions: Number(data?.totalSessions) || 0,
+          totalMinutes: Number(data?.totalMinutes) || 0,
+          avgAccuracy: Number(data?.avgAccuracy) || 0,
+          highestLevel: Number(data?.highestLevel) || 0,
+          totalScore: Number(data?.totalScore) || 0,
+          currentStreak: Number(data?.currentStreak) || 0,
+          favoriteCategory: String(data?.favoriteCategory || 'none'),
+          recentSessions: Array.isArray(data?.recentSessions) ? data.recentSessions : [],
+        })
+      })
       .catch(() => {})
+      .finally(() => setLoaded(true))
   }, [])
 
-  const statCards = stats ? [
-    { label: 'Total Score', value: (stats.totalScore ?? 0).toLocaleString(), icon: '🏆' },
-    { label: 'Sessions', value: stats.totalSessions ?? 0, icon: '🎮' },
-    { label: 'Avg Accuracy', value: `${stats.avgAccuracy ?? 0}%`, icon: '🎯' },
-    { label: 'Streak', value: `${stats.currentStreak ?? 0} days`, icon: '🔥' },
-    { label: 'Highest Level', value: stats.highestLevel ?? 0, icon: '⬆️' },
-    { label: 'Training Time', value: `${stats.totalMinutes ?? 0} min`, icon: '⏱️' },
-  ] : []
+  const statCards = [
+    { label: 'Total Score', value: stats.totalScore.toLocaleString(), icon: '🏆' },
+    { label: 'Sessions', value: stats.totalSessions, icon: '🎮' },
+    { label: 'Avg Accuracy', value: `${stats.avgAccuracy}%`, icon: '🎯' },
+    { label: 'Streak', value: `${stats.currentStreak} days`, icon: '🔥' },
+    { label: 'Highest Level', value: stats.highestLevel, icon: '⬆️' },
+    { label: 'Training Time', value: `${stats.totalMinutes} min`, icon: '⏱️' },
+  ]
 
   return (
     <div className="space-y-8">
@@ -54,7 +67,13 @@ export default function DashboardPage() {
         <p className="text-[#6B7280] mt-1">Your cognitive training overview</p>
       </div>
 
-      {stats ? (
+      {!loaded ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 animate-pulse h-24" />
+          ))}
+        </div>
+      ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {statCards.map(s => (
@@ -87,14 +106,14 @@ export default function DashboardPage() {
 
             <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-[#593CC8] mb-4">Recent Activity</h2>
-              {(stats.recentSessions ?? []).length > 0 ? (
+              {stats.recentSessions.length > 0 ? (
                 <div className="space-y-3">
-                  {(stats.recentSessions ?? []).slice(0, 5).map((s: any) => (
-                    <div key={s.id} className="flex items-center justify-between text-sm">
-                      <span className="text-[#4B5563]">{s.gameName ?? 'Unknown'}</span>
+                  {stats.recentSessions.slice(0, 5).map((s: any, idx: number) => (
+                    <div key={s?.id ?? idx} className="flex items-center justify-between text-sm">
+                      <span className="text-[#4B5563]">{s?.gameName ?? 'Unknown'}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-[#593CC8] font-medium">Score: {s.score ?? 0}</span>
-                        <span className="text-[#9CA3AF]">{s.completedAt ? new Date(s.completedAt).toLocaleDateString() : '-'}</span>
+                        <span className="text-[#593CC8] font-medium">Score: {s?.score ?? 0}</span>
+                        <span className="text-[#9CA3AF]">{s?.completedAt ? new Date(s.completedAt).toLocaleDateString() : '-'}</span>
                       </div>
                     </div>
                   ))}
@@ -105,12 +124,6 @@ export default function DashboardPage() {
             </div>
           </div>
         </>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 animate-pulse h-24" />
-          ))}
-        </div>
       )}
 
       <div className="flex gap-4">
