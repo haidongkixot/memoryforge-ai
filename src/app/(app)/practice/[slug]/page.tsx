@@ -25,7 +25,7 @@ export default function PracticePage() {
   const [feedback, setFeedback] = useState('')
 
   useEffect(() => {
-    fetch(`/api/exercises?slug=${params.slug}`).then(r => r.json()).then(d => { if (d && !d.error) setGame(d) })
+    fetch(`/api/exercises?slug=${params.slug}`).then(r => { if (!r.ok) throw new Error('Failed'); return r.json() }).then(d => { if (d && !d.error) setGame(d) }).catch(() => {})
   }, [params.slug])
 
   const handleComplete = async (score: number, movesOrLevel: number, accuracyOrTime: number, movesExtra?: number) => {
@@ -54,7 +54,7 @@ export default function PracticePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gameName: game.name, score, level, accuracy, duration: time }),
-      }).then(r => r.json()).then(d => setFeedback(d.feedback)).catch(() => {})
+      }).then(r => { if (!r.ok) throw new Error('Failed'); return r.json() }).then(d => setFeedback(d?.feedback || '')).catch(() => {})
     }
   }
 
@@ -99,13 +99,13 @@ export default function PracticePage() {
             <div>
               <h3 className="text-sm font-semibold text-[#593CC8] uppercase mb-2">Rules</h3>
               <ul className="space-y-1">
-                {game.rules.map((r, i) => <li key={i} className="text-[#4B5563] text-sm flex items-start gap-2"><span className="text-[#5DEAEA] mt-0.5">&#8226;</span>{r}</li>)}
+                {(game.rules ?? []).map((r, i) => <li key={i} className="text-[#4B5563] text-sm flex items-start gap-2"><span className="text-[#5DEAEA] mt-0.5">&#8226;</span>{r}</li>)}
               </ul>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-[#ABF263] uppercase mb-2">Benefits</h3>
               <ul className="space-y-1">
-                {game.benefits.map((b, i) => <li key={i} className="text-[#4B5563] text-sm flex items-start gap-2"><span className="text-[#ABF263] mt-0.5">&#10003;</span>{b}</li>)}
+                {(game.benefits ?? []).map((b, i) => <li key={i} className="text-[#4B5563] text-sm flex items-start gap-2"><span className="text-[#ABF263] mt-0.5">&#10003;</span>{b}</li>)}
               </ul>
             </div>
           </div>

@@ -10,7 +10,10 @@ export default function GamificationBar() {
   const [stats, setStats] = useState<GamStats | null>(null)
 
   useEffect(() => {
-    fetch('/api/gamification').then(r => r.json()).then(d => { if (d.level) setStats(d) }).catch(() => {})
+    fetch('/api/gamification')
+      .then(r => { if (!r.ok) throw new Error('Failed'); return r.json() })
+      .then(d => { if (d?.level) setStats(d) })
+      .catch(() => {})
   }, [])
 
   if (!stats) return null

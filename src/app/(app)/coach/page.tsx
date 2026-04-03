@@ -23,9 +23,9 @@ export default function CoachPage() {
 
   useEffect(() => {
     fetch('/api/ai/chat')
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error('Failed'); return r.json() })
       .then((data) => {
-        if (data.messages) setMessages(data.messages)
+        if (Array.isArray(data?.messages)) setMessages(data.messages)
       })
       .catch(() => {})
       .finally(() => setLoadingHistory(false))

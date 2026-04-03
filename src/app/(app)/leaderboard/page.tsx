@@ -18,8 +18,8 @@ export default function LeaderboardPage() {
   useEffect(() => {
     setLoading(true)
     fetch(`/api/leaderboard?period=${period}`)
-      .then((r) => r.json())
-      .then((data) => setLeaders(data.leaders || []))
+      .then((r) => { if (!r.ok) throw new Error('Failed'); return r.json() })
+      .then((data) => setLeaders(Array.isArray(data?.leaders) ? data.leaders : []))
       .catch(() => setLeaders([]))
       .finally(() => setLoading(false))
   }, [period])
@@ -97,13 +97,13 @@ export default function LeaderboardPage() {
                 <span className="text-[#593CC8] font-semibold">{(entry.totalXp ?? 0).toLocaleString()}</span>
               </div>
               <div className="col-span-2 text-right">
-                <span className="text-[#4B5563]">Lv. {entry.level}</span>
+                <span className="text-[#4B5563]">Lv. {entry.level ?? 1}</span>
               </div>
               <div className="col-span-1 text-right hidden sm:block">
-                <span className="text-[#6B7280]">{entry.gamesPlayed}</span>
+                <span className="text-[#6B7280]">{entry.gamesPlayed ?? 0}</span>
               </div>
               <div className="col-span-2 text-right hidden sm:block">
-                <span className="text-[#6B7280]">{entry.avgAccuracy}%</span>
+                <span className="text-[#6B7280]">{entry.avgAccuracy ?? 0}%</span>
               </div>
             </div>
           ))

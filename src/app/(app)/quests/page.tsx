@@ -20,8 +20,8 @@ export default function QuestsPage() {
 
   useEffect(() => {
     fetch('/api/quests')
-      .then((r) => r.json())
-      .then((data) => setQuests(data.quests || []))
+      .then((r) => { if (!r.ok) throw new Error('Failed'); return r.json() })
+      .then((data) => setQuests(Array.isArray(data?.quests) ? data.quests : []))
       .catch(() => setQuests([]))
       .finally(() => setLoading(false))
   }, [])

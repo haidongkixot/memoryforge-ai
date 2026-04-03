@@ -4,7 +4,21 @@ import { useEffect, useState } from 'react'
 
 export default function ProgressPage() {
   const [data, setData] = useState<any>(null)
-  useEffect(() => { fetch('/api/progress').then(r => { if (!r.ok) throw new Error('Failed'); return r.json() }).then(setData).catch(() => {}) }, [])
+  useEffect(() => {
+    fetch('/api/progress')
+      .then(r => { if (!r.ok) throw new Error('Failed'); return r.json() })
+      .then(d => {
+        const safe = {
+          totalScore: 0, totalSessions: 0, avgAccuracy: 0, highestLevel: 0,
+          currentStreak: 0, totalMinutes: 0, achievements: [] as any[], recentSessions: [] as any[],
+          ...d,
+        }
+        safe.achievements = Array.isArray(d?.achievements) ? d.achievements : []
+        safe.recentSessions = Array.isArray(d?.recentSessions) ? d.recentSessions : []
+        setData(safe)
+      })
+      .catch(() => {})
+  }, [])
 
   if (!data) return <div className="text-[#6B7280] text-center py-12">Loading progress...</div>
 
@@ -17,12 +31,12 @@ export default function ProgressPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { label: 'Total Score', value: data.totalScore?.toLocaleString() || '0', color: 'text-[#593CC8]' },
-          { label: 'Sessions', value: data.totalSessions || 0, color: 'text-[#593CC8]' },
-          { label: 'Accuracy', value: `${data.avgAccuracy || 0}%`, color: 'text-[#ABF263]' },
-          { label: 'Highest Level', value: data.highestLevel || 0, color: 'text-yellow-500' },
-          { label: 'Streak', value: `${data.currentStreak || 0}d`, color: 'text-[#F97316]' },
-          { label: 'Time', value: `${data.totalMinutes || 0}m`, color: 'text-[#5DEAEA]' },
+          { label: 'Total Score', value: (data.totalScore ?? 0).toLocaleString(), color: 'text-[#593CC8]' },
+          { label: 'Sessions', value: data.totalSessions ?? 0, color: 'text-[#593CC8]' },
+          { label: 'Accuracy', value: `${data.avgAccuracy ?? 0}%`, color: 'text-[#ABF263]' },
+          { label: 'Highest Level', value: data.highestLevel ?? 0, color: 'text-yellow-500' },
+          { label: 'Streak', value: `${data.currentStreak ?? 0}d`, color: 'text-[#F97316]' },
+          { label: 'Time', value: `${data.totalMinutes ?? 0}m`, color: 'text-[#5DEAEA]' },
         ].map(s => (
           <div key={s.label} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
             <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
@@ -34,14 +48,14 @@ export default function ProgressPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-[#593CC8] mb-4">Achievements</h2>
-          {data.achievements?.length > 0 ? (
+          {(data.achievements ?? []).length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
-              {data.achievements.map((a: any) => (
+              {(data.achievements ?? []).map((a: any) => (
                 <div key={a.id} className="bg-[#F8F9FE] border border-gray-100 rounded-xl p-3 flex items-center gap-3">
                   <div className="text-2xl">🏅</div>
                   <div>
-                    <div className="text-sm font-medium text-[#1f2937]">{a.achievement}</div>
-                    <div className="text-xs text-[#9CA3AF]">{new Date(a.unlockedAt).toLocaleDateString()}</div>
+                    <div className="text-sm font-medium text-[#1f2937]">{a.achievement ?? 'Achievement'}</div>
+                    <div className="text-xs text-[#9CA3AF]">{a.unlockedAt ? new Date(a.unlockedAt).toLocaleDateString() : '-'}</div>
                   </div>
                 </div>
               ))}
@@ -53,9 +67,9 @@ export default function ProgressPage() {
 
         <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-[#593CC8] mb-4">Recent Sessions</h2>
-          {data.recentSessions?.length > 0 ? (
+          {(data.recentSessions ?? []).length > 0 ? (
             <div className="space-y-3">
-              {data.recentSessions.map((s: any) => (
+              {(data.recentSessions ?? []).map((s: any) => (
                 <div key={s.id} className="flex items-center justify-between bg-[#F8F9FE] border border-gray-100 rounded-xl p-3">
                   <div>
                     <div className="text-sm font-medium text-[#1f2937]">{s.gameName}</div>

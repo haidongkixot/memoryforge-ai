@@ -14,6 +14,17 @@ interface Stats {
   recentSessions: any[]
 }
 
+const defaultStats: Stats = {
+  totalSessions: 0,
+  totalMinutes: 0,
+  avgAccuracy: 0,
+  highestLevel: 0,
+  totalScore: 0,
+  currentStreak: 0,
+  favoriteCategory: 'none',
+  recentSessions: [],
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null)
 
@@ -23,17 +34,17 @@ export default function DashboardPage() {
         if (!r.ok) throw new Error('Failed to fetch')
         return r.json()
       })
-      .then(setStats)
+      .then(data => setStats({ ...defaultStats, ...data, recentSessions: Array.isArray(data?.recentSessions) ? data.recentSessions : [] }))
       .catch(() => {})
   }, [])
 
   const statCards = stats ? [
     { label: 'Total Score', value: (stats.totalScore ?? 0).toLocaleString(), icon: '🏆' },
-    { label: 'Sessions', value: stats.totalSessions, icon: '🎮' },
-    { label: 'Avg Accuracy', value: `${stats.avgAccuracy}%`, icon: '🎯' },
-    { label: 'Streak', value: `${stats.currentStreak} days`, icon: '🔥' },
-    { label: 'Highest Level', value: stats.highestLevel, icon: '⬆️' },
-    { label: 'Training Time', value: `${stats.totalMinutes} min`, icon: '⏱️' },
+    { label: 'Sessions', value: stats.totalSessions ?? 0, icon: '🎮' },
+    { label: 'Avg Accuracy', value: `${stats.avgAccuracy ?? 0}%`, icon: '🎯' },
+    { label: 'Streak', value: `${stats.currentStreak ?? 0} days`, icon: '🔥' },
+    { label: 'Highest Level', value: stats.highestLevel ?? 0, icon: '⬆️' },
+    { label: 'Training Time', value: `${stats.totalMinutes ?? 0} min`, icon: '⏱️' },
   ] : []
 
   return (
@@ -76,14 +87,14 @@ export default function DashboardPage() {
 
             <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-[#593CC8] mb-4">Recent Activity</h2>
-              {stats.recentSessions.length > 0 ? (
+              {(stats.recentSessions ?? []).length > 0 ? (
                 <div className="space-y-3">
-                  {stats.recentSessions.slice(0, 5).map((s: any) => (
+                  {(stats.recentSessions ?? []).slice(0, 5).map((s: any) => (
                     <div key={s.id} className="flex items-center justify-between text-sm">
-                      <span className="text-[#4B5563]">{s.gameName}</span>
+                      <span className="text-[#4B5563]">{s.gameName ?? 'Unknown'}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-[#593CC8] font-medium">Score: {s.score}</span>
-                        <span className="text-[#9CA3AF]">{new Date(s.completedAt).toLocaleDateString()}</span>
+                        <span className="text-[#593CC8] font-medium">Score: {s.score ?? 0}</span>
+                        <span className="text-[#9CA3AF]">{s.completedAt ? new Date(s.completedAt).toLocaleDateString() : '-'}</span>
                       </div>
                     </div>
                   ))}

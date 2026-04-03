@@ -26,7 +26,7 @@ export default function LibraryPage() {
     if (category !== 'all') params.set('category', category)
     if (difficulty !== 'all') params.set('difficulty', difficulty)
     const timer = setTimeout(() => {
-      fetch(`/api/exercises?${params}`).then(r => r.json()).then(d => Array.isArray(d) && setGames(d))
+      fetch(`/api/exercises?${params}`).then(r => { if (!r.ok) throw new Error('Failed'); return r.json() }).then(d => Array.isArray(d) && setGames(d)).catch(() => {})
     }, 300)
     return () => clearTimeout(timer)
   }, [search, category, difficulty])
@@ -64,7 +64,7 @@ export default function LibraryPage() {
             <h3 className="text-lg font-semibold text-[#1f2937] group-hover:text-[#593CC8] transition-colors">{game.name}</h3>
             <p className="text-[#6B7280] text-sm mt-1 line-clamp-2">{game.description}</p>
             <div className="flex flex-wrap gap-1 mt-3">
-              {game.benefits.slice(0, 2).map(b => (
+              {(game.benefits ?? []).slice(0, 2).map(b => (
                 <span key={b} className="text-xs bg-[#5DEAEA]/10 text-[#593CC8] px-2 py-0.5 rounded-full font-medium">{b}</span>
               ))}
             </div>
