@@ -17,7 +17,7 @@ interface FacePerson {
   job: string
 }
 
-const FACES: FacePerson[] = [
+const FALLBACK_FACES: FacePerson[] = [
   { emoji: '😊', name: 'Sarah Chen', job: 'Teacher' },
   { emoji: '😎', name: 'Marcus Lee', job: 'Chef' },
   { emoji: '🤔', name: 'Emma Park', job: 'Doctor' },
@@ -70,8 +70,21 @@ function buildQuestions(studiedFaces: FacePerson[]): QuizQuestion[] {
 
 export default function FaceNameGame({ game, onComplete }: Props) {
   const faceCount = game.difficulty === 'advanced' ? 8 : game.difficulty === 'intermediate' ? 7 : 6
-  const [studiedFaces] = useState<FacePerson[]>(() => FACES.slice(0, faceCount))
+  const [studiedFaces, setStudiedFaces] = useState<FacePerson[]>(() => FALLBACK_FACES.slice(0, faceCount))
   const [phase, setPhase] = useState<Phase>('study')
+
+  // Fetch dynamic content from DB, fallback to hardcoded
+  useEffect(() => {
+    fetch(`/api/game-content?gameId=${game.id}&contentType=face_data&difficulty=${game.difficulty}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.content?.faces?.length) {
+          const faces: FacePerson[] = data.content.faces
+          setStudiedFaces(faces.slice(0, faceCount))
+        }
+      })
+      .catch(() => {})
+  }, [game.id, game.difficulty, faceCount])
   const [studyTime, setStudyTime] = useState(30)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [qIndex, setQIndex] = useState(0)

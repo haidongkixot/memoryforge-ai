@@ -85,8 +85,25 @@ model Game {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   gameSessions GameSession[]
+  contents     GameContent[]
   @@index([category])
   @@index([isActive, sortOrder])
+}
+
+model GameContent {
+  id          String   @id @default(cuid())
+  gameId      String
+  contentType String   // 'word_list' | 'word_pair' | 'face_data' | 'custom'
+  content     Json     // flexible: words array, pair objects, face objects
+  difficulty  String   @default("beginner")
+  label       String   @default("Default")  // "Pack 1", "Animals Theme", etc.
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
+  @@index([contentType])
 }
 
 model GameSession {

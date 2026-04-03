@@ -83,6 +83,91 @@ async function main() {
   const gameMap: Record<string, string> = {}
   for (const g of allGames) gameMap[g.slug] = g.id
 
+  // Game Content Packs (default word lists, word pairs, face data)
+  const wordMemoryId = gameMap['word-memory']
+  const wordChainId = gameMap['word-chain']
+  const wordAssocId = gameMap['word-association']
+  const faceNameId = gameMap['face-name']
+
+  if (wordMemoryId) {
+    const wordContentPacks = [
+      { gameId: wordMemoryId, contentType: 'word_list', difficulty: 'beginner', label: 'Default Beginner', content: { words: ['apple', 'blue', 'chair', 'dance', 'eagle', 'fish', 'green', 'house', 'island', 'jacket', 'kite', 'lemon'] } },
+      { gameId: wordMemoryId, contentType: 'word_list', difficulty: 'intermediate', label: 'Default Intermediate', content: { words: ['abstract', 'balance', 'cascade', 'derive', 'eclipse', 'fracture', 'glimpse', 'horizon', 'ignite', 'journal', 'kinetic', 'lattice', 'memoir', 'nucleus'] } },
+      { gameId: wordMemoryId, contentType: 'word_list', difficulty: 'advanced', label: 'Default Advanced', content: { words: ['ambiguous', 'Byzantine', 'clandestine', 'dilemma', 'ephemeral', 'furtive', 'gregarious', 'hypothesis', 'insidious', 'juxtapose', 'kaleidoscope', 'labyrinth'] } },
+    ]
+    for (const pack of wordContentPacks) {
+      const existing = await prisma.gameContent.findFirst({ where: { gameId: pack.gameId, label: pack.label } })
+      if (!existing) await prisma.gameContent.create({ data: pack })
+    }
+  }
+
+  if (wordChainId) {
+    const wordChainPacks = [
+      { gameId: wordChainId, contentType: 'word_list', difficulty: 'advanced', label: 'Default Advanced', content: { words: ['ambiguous', 'Byzantine', 'clandestine', 'dilemma', 'ephemeral', 'furtive', 'gregarious', 'hypothesis', 'insidious', 'juxtapose', 'kaleidoscope', 'labyrinth'] } },
+    ]
+    for (const pack of wordChainPacks) {
+      const existing = await prisma.gameContent.findFirst({ where: { gameId: pack.gameId, label: pack.label } })
+      if (!existing) await prisma.gameContent.create({ data: pack })
+    }
+  }
+
+  if (wordAssocId) {
+    const pairs = [
+      { target: 'Ocean', answer: 'Wave', distractors: ['Mountain', 'Desert', 'Forest'] },
+      { target: 'Piano', answer: 'Music', distractors: ['Painting', 'Sculpture', 'Dance'] },
+      { target: 'Doctor', answer: 'Hospital', distractors: ['School', 'Library', 'Stadium'] },
+      { target: 'Night', answer: 'Moon', distractors: ['Flower', 'River', 'Cloud'] },
+      { target: 'Winter', answer: 'Snow', distractors: ['Sand', 'Leaf', 'Rain'] },
+      { target: 'Book', answer: 'Library', distractors: ['Kitchen', 'Garage', 'Garden'] },
+      { target: 'Fire', answer: 'Smoke', distractors: ['Ice', 'Wind', 'Earth'] },
+      { target: 'Crown', answer: 'King', distractors: ['Chef', 'Pilot', 'Artist'] },
+      { target: 'Telescope', answer: 'Stars', distractors: ['Trees', 'Rocks', 'Waves'] },
+      { target: 'Pencil', answer: 'Paper', distractors: ['Glass', 'Metal', 'Clay'] },
+      { target: 'Bee', answer: 'Honey', distractors: ['Milk', 'Juice', 'Water'] },
+      { target: 'Camera', answer: 'Photo', distractors: ['Song', 'Story', 'Recipe'] },
+      { target: 'Lock', answer: 'Key', distractors: ['Rope', 'Chain', 'Wire'] },
+      { target: 'Compass', answer: 'Direction', distractors: ['Speed', 'Weight', 'Color'] },
+      { target: 'Thunder', answer: 'Lightning', distractors: ['Rainbow', 'Sunset', 'Breeze'] },
+      { target: 'Nest', answer: 'Bird', distractors: ['Fish', 'Cat', 'Horse'] },
+      { target: 'Brush', answer: 'Paint', distractors: ['Glue', 'Tape', 'Nail'] },
+      { target: 'Anchor', answer: 'Ship', distractors: ['Plane', 'Train', 'Car'] },
+      { target: 'Seed', answer: 'Plant', distractors: ['Rock', 'Sand', 'Mud'] },
+      { target: 'Clock', answer: 'Time', distractors: ['Space', 'Sound', 'Light'] },
+      { target: 'Helmet', answer: 'Safety', distractors: ['Beauty', 'Comfort', 'Speed'] },
+      { target: 'Map', answer: 'Journey', distractors: ['Recipe', 'Puzzle', 'Game'] },
+      { target: 'Stethoscope', answer: 'Heartbeat', distractors: ['Footstep', 'Whisper', 'Echo'] },
+      { target: 'Feather', answer: 'Light', distractors: ['Heavy', 'Dark', 'Loud'] },
+      { target: 'Diamond', answer: 'Precious', distractors: ['Common', 'Cheap', 'Rough'] },
+      { target: 'Volcano', answer: 'Eruption', distractors: ['Erosion', 'Flood', 'Drought'] },
+      { target: 'Magnifying', answer: 'Glass', distractors: ['Plastic', 'Wood', 'Stone'] },
+      { target: 'Bread', answer: 'Butter', distractors: ['Ketchup', 'Mustard', 'Vinegar'] },
+      { target: 'Stage', answer: 'Performance', distractors: ['Storage', 'Parking', 'Shipping'] },
+      { target: 'Thread', answer: 'Needle', distractors: ['Hammer', 'Wrench', 'Drill'] },
+    ]
+    const existing = await prisma.gameContent.findFirst({ where: { gameId: wordAssocId, label: 'Default' } })
+    if (!existing) {
+      await prisma.gameContent.create({ data: { gameId: wordAssocId, contentType: 'word_pair', difficulty: 'intermediate', label: 'Default', content: { pairs } } })
+    }
+  }
+
+  if (faceNameId) {
+    const faces = [
+      { emoji: '😊', name: 'Sarah Chen', job: 'Teacher' },
+      { emoji: '😎', name: 'Marcus Lee', job: 'Chef' },
+      { emoji: '🤔', name: 'Emma Park', job: 'Doctor' },
+      { emoji: '😄', name: 'David Kim', job: 'Engineer' },
+      { emoji: '🙂', name: 'Aisha Johnson', job: 'Artist' },
+      { emoji: '😁', name: 'Lucas Brown', job: 'Writer' },
+      { emoji: '😍', name: 'Priya Patel', job: 'Musician' },
+      { emoji: '🤗', name: 'Carlos Rivera', job: 'Pilot' },
+    ]
+    const existing = await prisma.gameContent.findFirst({ where: { gameId: faceNameId, label: 'Default' } })
+    if (!existing) {
+      await prisma.gameContent.create({ data: { gameId: faceNameId, contentType: 'face_data', difficulty: 'beginner', label: 'Default', content: { faces } } })
+    }
+  }
+  console.log('  ✓ Game Content Packs')
+
   const sessionsConfig = [
     { user: sarah, sessions: [
       ...Array.from({length:10}, (_,i) => ({ gameSlug: 'card-match', score: 850+i*115, level: 4+Math.floor(i/3), accuracy: 82+i*1.4, duration: 90+i*10, movesCount: 18+i, daysAgo: i+1 })),

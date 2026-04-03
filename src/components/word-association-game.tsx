@@ -8,7 +8,7 @@ interface WordPair {
   distractors: string[]
 }
 
-const WORD_PAIRS: WordPair[] = [
+const FALLBACK_PAIRS: WordPair[] = [
   { target: 'Ocean', answer: 'Wave', distractors: ['Mountain', 'Desert', 'Forest'] },
   { target: 'Piano', answer: 'Music', distractors: ['Painting', 'Sculpture', 'Dance'] },
   { target: 'Doctor', answer: 'Hospital', distractors: ['School', 'Library', 'Stadium'] },
@@ -42,7 +42,7 @@ const WORD_PAIRS: WordPair[] = [
 ]
 
 interface Props {
-  game: { name: string; gameType: string; timeLimit: number; gridSize: number; difficulty: string }
+  game: { id: string; name: string; gameType: string; timeLimit: number; gridSize: number; difficulty: string }
   onComplete: (score: number, level: number, accuracy: number, moves: number) => void
 }
 
@@ -50,6 +50,7 @@ const TOTAL_ROUNDS = 20
 const SECONDS_PER_ROUND = 15
 
 export default function WordAssociationGame({ game, onComplete }: Props) {
+  const [pairsPool, setPairsPool] = useState<WordPair[]>(FALLBACK_PAIRS)
   const [phase, setPhase] = useState<'ready' | 'playing' | 'feedback' | 'results'>('ready')
   const [currentRound, setCurrentRound] = useState(0)
   const [score, setScore] = useState(0)
@@ -63,8 +64,20 @@ export default function WordAssociationGame({ game, onComplete }: Props) {
   const [roundStartTime, setRoundStartTime] = useState(0)
   const [results, setResults] = useState<{ target: string; answer: string; userAnswer: string; correct: boolean }[]>([])
 
+  // Fetch dynamic content from DB, fallback to hardcoded
+  useEffect(() => {
+    fetch(`/api/game-content?gameId=${game.id}&contentType=word_pair&difficulty=${game.difficulty}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.content?.pairs?.length) {
+          setPairsPool(data.content.pairs)
+        }
+      })
+      .catch(() => {})
+  }, [game.id, game.difficulty])
+
   const startGame = useCallback(() => {
-    const shuffled = [...WORD_PAIRS].sort(() => Math.random() - 0.5).slice(0, TOTAL_ROUNDS)
+    const shuffled = [...pairsPool].sort(() => Math.random() - 0.5).slice(0, TOTAL_ROUNDS)
     setShuffledPairs(shuffled)
     setCurrentRound(0)
     setScore(0)
@@ -79,7 +92,7 @@ export default function WordAssociationGame({ game, onComplete }: Props) {
     const first = shuffled[0]
     setOptions([first.answer, ...first.distractors].sort(() => Math.random() - 0.5))
     setRoundTimer(SECONDS_PER_ROUND)
-  }, [])
+  }, [pairsPool])
 
   // Round timer countdown
   useEffect(() => {

@@ -11,7 +11,7 @@ interface Props {
   onComplete: (score: number, level: number, accuracy: number, moves: number) => void
 }
 
-const WORD_LISTS: Record<string, string[]> = {
+const FALLBACK_WORDS: Record<string, string[]> = {
   beginner: ['apple', 'blue', 'chair', 'dance', 'eagle', 'fish', 'green', 'house', 'island', 'jacket', 'kite', 'lemon'],
   intermediate: ['abstract', 'balance', 'cascade', 'derive', 'eclipse', 'fracture', 'glimpse', 'horizon', 'ignite', 'journal', 'kinetic', 'lattice', 'memoir', 'nucleus'],
   advanced: ['ambiguous', 'Byzantine', 'clandestine', 'dilemma', 'ephemeral', 'furtive', 'gregarious', 'hypothesis', 'insidious', 'juxtapose', 'kaleidoscope', 'labyrinth'],
@@ -25,10 +25,22 @@ const CARD_COLORS = [
 type Phase = 'study' | 'recall' | 'results'
 
 export default function WordMemoryGame({ game, onComplete }: Props) {
-  const difficulty = game.difficulty as keyof typeof WORD_LISTS
-  const wordList = WORD_LISTS[difficulty] || WORD_LISTS.beginner
+  const difficulty = game.difficulty as keyof typeof FALLBACK_WORDS
+  const [wordList, setWordList] = useState<string[]>(FALLBACK_WORDS[difficulty] || FALLBACK_WORDS.beginner)
   const wordCount = difficulty === 'advanced' ? 12 : difficulty === 'intermediate' ? 14 : 12
   const words = wordList.slice(0, wordCount)
+
+  // Fetch dynamic content from DB, fallback to hardcoded
+  useEffect(() => {
+    fetch(`/api/game-content?gameId=${game.id}&contentType=word_list&difficulty=${game.difficulty}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.content?.words?.length) {
+          setWordList(data.content.words)
+        }
+      })
+      .catch(() => {})
+  }, [game.id, game.difficulty])
 
   const [phase, setPhase] = useState<Phase>('study')
   const [studyTime, setStudyTime] = useState(30)
