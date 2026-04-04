@@ -12,6 +12,7 @@ const navItems = [
   { href: '/admin/leaderboard', label: 'Leaderboard', icon: '🏆' },
   { href: '/admin/analytics', label: 'Analytics', icon: '📊' },
   { href: '/admin/plans', label: 'Plans', icon: '💳' },
+  { href: '/admin/academy', label: 'Academy', icon: '🎓' },
   { href: '/admin/cms', label: 'Blog / CMS', icon: '📝' },
   { href: '/admin/ai-config', label: 'AI Config', icon: '🤖' },
   { href: '/admin/ai-logs', label: 'AI Logs', icon: '📋' },

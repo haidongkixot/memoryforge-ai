@@ -32,6 +32,7 @@ model User {
   trainingPlans TrainingPlan[]
   analyticsEvents AnalyticsEvent[]
   activityLogs  ActivityLog[]
+  chapterProgress UserChapterProgress[]
 }
 
 model Account {
@@ -299,6 +300,44 @@ model AppConfig {
 }
 
 // ── AI Generation ──
+
+// ── Academy ──
+
+model AcademyChapter {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  body          String   @db.Text
+  category      String
+  sortOrder     Int      @default(0)
+  keyTakeaways  String[]
+  minPlanSlug   String   @default("free")
+  quizData      Json?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  progress      UserChapterProgress[]
+
+  @@index([category])
+  @@index([isActive, sortOrder])
+}
+
+model UserChapterProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  chapterId   String
+  completed   Boolean  @default(false)
+  quizScore   Int?
+  quizAnswers Json?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter     AcademyChapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chapterId])
+  @@index([userId])
+}
 
 model AIGenerationLog {
   id           String   @id @default(cuid())

@@ -21,6 +21,7 @@ export default function Navbar() {
             <Link href="/library" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Games</Link>
             <Link href="/quests" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Quests</Link>
             <Link href="/leaderboard" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Leaderboard</Link>
+            <Link href="/academy" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Academy</Link>
             <Link href="/coach" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Coach</Link>
             <Link href="/progress" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Progress</Link>
             {session ? (
@@ -41,6 +42,7 @@ export default function Navbar() {
             <Link href="/library" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Games</Link>
             <Link href="/quests" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Quests</Link>
             <Link href="/leaderboard" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Leaderboard</Link>
+            <Link href="/academy" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Academy</Link>
             <Link href="/coach" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Coach</Link>
             <Link href="/progress" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Progress</Link>
           </div>
