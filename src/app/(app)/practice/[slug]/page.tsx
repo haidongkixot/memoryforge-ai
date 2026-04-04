@@ -9,6 +9,9 @@ import FaceNameGame from '@/components/face-name-game'
 import SpeedTapGame from '@/components/speed-tap-game'
 import SpatialMemoryGame from '@/components/spatial-memory-game'
 import WordAssociationGame from '@/components/word-association-game'
+import DualCodeGame from '@/components/dual-code-game'
+import UFOVGame from '@/components/ufov-game'
+import SpacedReviewGame from '@/components/spaced-review-game'
 
 interface Game {
   id: string; name: string; slug: string; category: string; difficulty: string; description: string
@@ -78,6 +81,12 @@ export default function PracticePage() {
         return <SpeedTapGame game={game} onComplete={handleComplete} />
       case 'spatial':
         return <SpatialMemoryGame game={game} onComplete={handleComplete} />
+      case 'dual_code':
+        return <DualCodeGame game={game} onComplete={handleComplete} />
+      case 'ufov':
+        return <UFOVGame game={game} onComplete={handleComplete} />
+      case 'spaced_review':
+        return <SpacedReviewGame game={game} onComplete={handleComplete} />
       default:
         return <MemoryGrid gridSize={Math.min(game.gridSize || 4, 6)} level={level} onComplete={handleComplete} />
     }
