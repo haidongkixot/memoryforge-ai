@@ -9,13 +9,13 @@ const plans = [
     period: 'forever',
     description: 'Get started with core memory games',
     features: [
-      '5 memory games',
-      'Beginner difficulty',
-      'Basic progress tracking',
+      '5 Beginner games',
+      '2 Academy chapters',
+      'Basic brain training',
       'Daily stats dashboard',
       'Community leaderboard',
     ],
-    limitations: ['No AI Coach', 'Limited game modes', 'No advanced difficulty'],
+    limitations: ['No AI Coach', 'No intermediate or advanced games', 'Limited Academy access'],
     cta: 'Get Started',
     href: '/signup',
     highlighted: false,
@@ -26,12 +26,13 @@ const plans = [
     period: '/month',
     description: 'Unlock your full cognitive potential',
     features: [
-      'All memory games unlocked',
-      'All difficulty levels',
+      'All 12+ games unlocked',
+      'All difficulty levels (Beginner, Intermediate, Advanced)',
+      'All Academy chapters',
       'AI Memory Coach (unlimited)',
-      'Personalized training plans',
+      'AI content generation',
+      'Advanced training plans',
       'Advanced analytics & insights',
-      'Memory technique library',
       'Priority support',
       'Daily quests & bonus XP',
     ],
@@ -163,11 +164,15 @@ export default function PricingPage() {
               },
               {
                 q: 'Is the free plan really free?',
-                a: 'Absolutely. The free plan includes 5 core memory games and basic tracking with no credit card required.',
+                a: 'Absolutely. The free plan includes 5 beginner-level memory games, 2 Academy chapters, and basic progress tracking -- no credit card required.',
               },
               {
                 q: 'What does the AI Coach do?',
                 a: 'The AI Coach analyzes your performance data and provides personalized memory training advice, technique recommendations, and progress insights.',
+              },
+              {
+                q: 'What games are included in each plan?',
+                a: 'Free includes all Beginner-level games. Pro unlocks Intermediate and Advanced difficulty games plus all 12+ training games in the library.',
               },
             ].map((faq) => (
               <div key={faq.q} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">

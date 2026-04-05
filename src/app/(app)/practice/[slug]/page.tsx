@@ -1,6 +1,9 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useUserPlan } from '@/hooks/use-user-plan'
+import { canAccessDifficulty } from '@/lib/content-gating'
 import MemoryGrid from '@/components/memory-grid'
 import SequenceGame from '@/components/sequence-game'
 import WordMemoryGame from '@/components/word-memory-game'
@@ -26,15 +29,13 @@ export default function PracticePage() {
   const [level, setLevel] = useState(1)
   const [result, setResult] = useState<{ score: number; moves?: number; time: number; level?: number; accuracy?: number } | null>(null)
   const [feedback, setFeedback] = useState('')
+  const { plan } = useUserPlan()
 
   useEffect(() => {
     fetch(`/api/exercises?slug=${params.slug}`).then(r => { if (!r.ok) throw new Error('Failed'); return r.json() }).then(d => { if (d && !d.error) setGame(d) }).catch(() => {})
   }, [params.slug])
 
   const handleComplete = async (score: number, movesOrLevel: number, accuracyOrTime: number, movesExtra?: number) => {
-    // Signature variants:
-    // MemoryGrid/SequenceGame: (score, moves/level, time)
-    // New games: (score, level, accuracy, moves)
     const isNewSignature = movesExtra !== undefined
     const time = isNewSignature ? accuracyOrTime : accuracyOrTime
     const accuracy = isNewSignature ? accuracyOrTime : Math.min(100, Math.round(score / 10))
@@ -97,6 +98,33 @@ export default function PracticePage() {
       <div className="text-[#6B7280]">Loading game...</div>
     </div>
   )
+
+  // Plan gating: show upgrade prompt if user cannot access this difficulty
+  const locked = !canAccessDifficulty(plan, game.difficulty)
+  if (locked) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-16">
+        <div className="bg-white border border-gray-100 rounded-2xl p-10 shadow-sm">
+          <svg className="w-16 h-16 text-[#593CC8] mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+          <h2 className="text-2xl font-bold text-[#593CC8] mb-2">{game.name}</h2>
+          <p className="text-[#6B7280] mb-2">This is a{game.difficulty === 'advanced' ? 'n' : ''} <span className="font-semibold capitalize">{game.difficulty}</span> game.</p>
+          <p className="text-[#6B7280] mb-6">Upgrade to <span className="font-semibold text-[#593CC8]">Pro</span> to unlock all games and difficulty levels.</p>
+          <div className="flex justify-center gap-4">
+            <Link href="/pricing"
+              className="bg-[#593CC8] hover:bg-[#4a30a8] text-white px-8 py-3 rounded-full font-semibold transition-colors shadow-[0_4px_15px_rgba(89,60,200,0.25)]">
+              Upgrade to Pro
+            </Link>
+            <Link href="/library"
+              className="border border-gray-200 hover:border-[#593CC8]/40 text-[#6B7280] hover:text-[#593CC8] px-6 py-3 rounded-full transition-colors font-medium">
+              Back to Library
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

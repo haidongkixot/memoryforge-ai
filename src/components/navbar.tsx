@@ -2,10 +2,19 @@
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
+import { useUserPlan } from '@/hooks/use-user-plan'
+
+const PLAN_BADGE: Record<string, { label: string; className: string }> = {
+  free: { label: 'Free', className: 'bg-gray-100 text-gray-500' },
+  plus: { label: 'Plus', className: 'bg-blue-50 text-blue-600' },
+  pro: { label: 'Pro', className: 'bg-purple-50 text-purple-600' },
+}
 
 export default function Navbar() {
   const { data: session } = useSession()
   const [open, setOpen] = useState(false)
+  const { plan } = useUserPlan()
+  const badge = PLAN_BADGE[plan] ?? PLAN_BADGE.free
 
   return (
     <nav className="bg-white border-b border-[#E5E7EB] shadow-[0_2px_15px_rgba(99,102,241,0.04)]">
@@ -25,7 +34,13 @@ export default function Navbar() {
             <Link href="/coach" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Coach</Link>
             <Link href="/progress" className="text-[#6B7280] hover:text-[#6366f1] transition-colors text-sm font-medium">Progress</Link>
             {session ? (
-              <button onClick={() => signOut()} className="text-[#6B7280] hover:text-[#6366f1] text-sm font-medium">Sign Out</button>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>{badge.label}</span>
+                {plan === 'free' && (
+                  <Link href="/pricing" className="text-xs text-[#6366f1] hover:text-[#4f50d9] font-semibold transition-colors">Upgrade</Link>
+                )}
+                <button onClick={() => signOut()} className="text-[#6B7280] hover:text-[#6366f1] text-sm font-medium">Sign Out</button>
+              </div>
             ) : (
               <Link href="/login" className="bg-[#6366f1] hover:bg-[#5558e6] text-white px-5 py-2 rounded-full text-sm font-semibold transition-colors shadow-[0_4px_15px_rgba(99,102,241,0.25)]">Sign In</Link>
             )}
@@ -45,6 +60,14 @@ export default function Navbar() {
             <Link href="/academy" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Academy</Link>
             <Link href="/coach" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Coach</Link>
             <Link href="/progress" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Progress</Link>
+            {session && (
+              <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>{badge.label}</span>
+                {plan === 'free' && (
+                  <Link href="/pricing" className="text-xs text-[#6366f1] font-semibold">Upgrade</Link>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
