@@ -654,6 +654,37 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* SECTION: Academy */}
+        <section className="px-4 py-20 bg-white">
+          <div className="max-w-5xl mx-auto">
+            <p className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase mb-3">Academy</p>
+            <h2 className="text-3xl font-bold text-[#1f2937] tracking-tight mb-4">Learn the Science</h2>
+            <p className="text-[#6B7280] text-base mb-12 max-w-xl">
+              Master the research behind memory and cognition with structured Academy lessons.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+              {[
+                { title: 'Working Memory', subtitle: 'Your brain\'s RAM -- how it works and how to expand it', icon: '🧠' },
+                { title: 'The Forgetting Curve', subtitle: 'Why we forget and how spaced repetition fights back', icon: '📉' },
+                { title: 'Sleep, Naps & Memory', subtitle: 'How rest consolidates what you learn into long-term storage', icon: '😴' },
+              ].map((ch) => (
+                <div key={ch.title} className="bg-white border border-[#E5E7EB] rounded-2xl p-6 hover:border-[#6366f1]/50 hover:shadow-md transition-all">
+                  <div className="text-3xl mb-4">{ch.icon}</div>
+                  <h3 className="text-[#1f2937] font-semibold tracking-tight mb-2">{ch.title}</h3>
+                  <p className="text-[#6B7280] text-sm leading-relaxed">{ch.subtitle}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center">
+              <Link href="/academy" className="inline-block border border-[#E5E7EB] hover:border-[#6366f1]/50 text-[#6B7280] hover:text-[#6366f1] px-8 py-3 rounded-full text-base transition-colors tracking-tight font-medium">
+                Explore Academy &rarr;
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* SECTION 9: CTA */}
         <section className="px-4 py-24 bg-white">
           <div className="max-w-3xl mx-auto text-center">
