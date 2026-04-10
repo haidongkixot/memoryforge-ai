@@ -15,8 +15,15 @@ export async function GET(req: Request) {
       return NextResponse.json(game)
     }
 
+    const kidsZone = searchParams.get('kidsZone')
+
     const where: any = { isActive: true }
-    if (category) where.category = category
+    if (kidsZone === 'true') {
+      where.category = 'kids-zone'
+    } else {
+      if (category) where.category = category
+      else where.category = { not: 'kids-zone' }
+    }
     if (difficulty) where.difficulty = difficulty
     if (search) {
       where.OR = [
