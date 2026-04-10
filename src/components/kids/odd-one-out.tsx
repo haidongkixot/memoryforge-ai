@@ -1,7 +1,7 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 interface Puzzle { items: string[]; oddIndex: number; reason: string }
 
@@ -18,6 +18,19 @@ const PUZZLES: Puzzle[] = [
   { items: ['👟', '👢', '🩴', '🎩'], oddIndex: 3, reason: 'Not footwear!' },
   { items: ['🍕', '🍔', '🌮', '🔨'], oddIndex: 3, reason: 'Not food!' },
   { items: ['🌹', '🌻', '🌷', '⚡'], oddIndex: 3, reason: 'Not a flower!' },
+  { items: ['🏠', '🏰', '🏫', '🌊'], oddIndex: 3, reason: 'Not a building!' },
+  { items: ['🎨', '🖌️', '🖍️', '🔧'], oddIndex: 3, reason: 'Not for art!' },
+  { items: ['🧊', '❄️', '🌨️', '🔥'], oddIndex: 3, reason: 'Not cold!' },
+  { items: ['🍰', '🧁', '🍩', '🥦'], oddIndex: 3, reason: 'Not a dessert!' },
+  { items: ['🚂', '🚁', '⛵', '📚'], oddIndex: 3, reason: 'Not a vehicle!' },
+  { items: ['🐕', '🐈', '🐠', '🪨'], oddIndex: 3, reason: 'Not an animal!' },
+  { items: ['🌍', '🌙', '⭐', '🎈'], oddIndex: 3, reason: 'Not in space!' },
+  { items: ['🔴', '🟢', '🔵', '🎵'], oddIndex: 3, reason: 'Not a color circle!' },
+  { items: ['🧤', '🧣', '🧥', '🍭'], oddIndex: 3, reason: 'Not clothing!' },
+  { items: ['📐', '📏', '✏️', '🐸'], oddIndex: 3, reason: 'Not school supplies!' },
+  { items: ['🥁', '🎹', '🎻', '🏈'], oddIndex: 3, reason: 'Not an instrument!' },
+  { items: ['🍌', '🥭', '🍑', '🧲'], oddIndex: 3, reason: 'Not a fruit!' },
+  { items: ['🦅', '🦜', '🐧', '🐍'], oddIndex: 3, reason: 'Not a bird!' },
 ]
 
 function shuffleWithOdd(items: string[], oddIdx: number): { shuffled: string[]; newOddIdx: number } {
@@ -26,23 +39,26 @@ function shuffleWithOdd(items: string[], oddIdx: number): { shuffled: string[]; 
   return { shuffled: s.map(e => e.item), newOddIdx: s.findIndex(e => e.isOdd) }
 }
 
-export default function OddOneOut({ onComplete }: Props) {
+export default function OddOneOut({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(6 + Math.floor(level / 3), 15)
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [feedback, setFeedback] = useState<null | boolean>(null)
-  const [shuffledPuzzles] = useState(() => {
-    const p = [...PUZZLES].sort(() => Math.random() - 0.5).slice(0, 10)
+
+  const shuffledPuzzles = useMemo(() => {
+    const p = [...PUZZLES].sort(() => Math.random() - 0.5).slice(0, rounds)
     return p.map(pz => {
       const { shuffled, newOddIdx } = shuffleWithOdd(pz.items, pz.oddIndex)
       return { items: shuffled, oddIndex: newOddIdx, reason: pz.reason }
     })
-  })
+  }, [level, rounds])
+
   const total = shuffledPuzzles.length
 
   const handlePick = useCallback((idx: number) => {
     if (feedback !== null) return
     const correct = idx === shuffledPuzzles[round].oddIndex
-    const pts = correct ? 100 : 0
+    const pts = correct ? 50 + level * 5 : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
@@ -50,7 +66,7 @@ export default function OddOneOut({ onComplete }: Props) {
       if (round + 1 >= total) onComplete(score + pts)
       else { setRound(r => r + 1); setFeedback(null) }
     }, 1200)
-  }, [round, total, feedback, score, shuffledPuzzles, onComplete])
+  }, [round, total, feedback, score, shuffledPuzzles, level, onComplete])
 
   const p = shuffledPuzzles[round]
 

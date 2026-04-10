@@ -1,7 +1,7 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 interface BalanceQ {
   left: { emoji: string; count: number }[]
@@ -15,15 +15,18 @@ const WEIGHTS: Record<string, number> = {
   '🐱': 4, '🐶': 6, '🐹': 1, '🐰': 3,
 }
 
-function genQuestion(): BalanceQ {
+function genQuestion(level: number): BalanceQ {
   const emojis = Object.keys(WEIGHTS)
+  const maxItems = level <= 10 ? 2 : level <= 20 ? 3 : 4
+  const maxCount = level <= 10 ? 2 : level <= 20 ? 3 : 4
+
   const pickItems = (): { emoji: string; count: number }[] => {
-    const n = 1 + Math.floor(Math.random() * 2)
+    const n = 1 + Math.floor(Math.random() * maxItems)
     const items: { emoji: string; count: number }[] = []
     for (let i = 0; i < n; i++) {
       items.push({
         emoji: emojis[Math.floor(Math.random() * emojis.length)],
-        count: 1 + Math.floor(Math.random() * 3),
+        count: 1 + Math.floor(Math.random() * maxCount),
       })
     }
     return items
@@ -38,17 +41,18 @@ function genQuestion(): BalanceQ {
   return { left, right, answer }
 }
 
-export default function BalanceScale({ onComplete }: Props) {
+export default function BalanceScale({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(6 + Math.floor(level / 3), 15)
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [feedback, setFeedback] = useState<null | boolean>(null)
-  const [questions] = useState(() => Array.from({ length: 10 }, () => genQuestion()))
+  const questions = useMemo(() => Array.from({ length: rounds }, () => genQuestion(level)), [level, rounds])
   const total = questions.length
 
   const handlePick = useCallback((pick: 'left' | 'right' | 'equal') => {
     if (feedback !== null) return
     const correct = pick === questions[round].answer
-    const pts = correct ? 100 : 0
+    const pts = correct ? 50 + level * 5 : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
@@ -56,7 +60,7 @@ export default function BalanceScale({ onComplete }: Props) {
       if (round + 1 >= total) onComplete(score + pts)
       else { setRound(r => r + 1); setFeedback(null) }
     }, 1200)
-  }, [round, total, feedback, score, questions, onComplete])
+  }, [round, total, feedback, score, questions, level, onComplete])
 
   const q = questions[round]
   const renderSide = (items: { emoji: string; count: number }[]) => (
@@ -80,7 +84,6 @@ export default function BalanceScale({ onComplete }: Props) {
 
       <p className="text-[#6B7280] font-medium">Which side is heavier? ⚖️</p>
 
-      {/* Scale display */}
       <div className="flex items-end gap-4 w-full max-w-md">
         <div className={`flex-1 border-2 rounded-2xl p-4 min-h-[80px] flex items-center justify-center ${
           feedback !== null && q.answer === 'left' ? 'border-green-400 bg-green-50' : 'border-blue-200 bg-blue-50'
@@ -95,7 +98,6 @@ export default function BalanceScale({ onComplete }: Props) {
         </div>
       </div>
 
-      {/* Answer buttons */}
       <div className="flex gap-3">
         <button onClick={() => handlePick('left')}
           className={`px-6 py-3 rounded-full font-bold text-lg transition-all active:scale-95 ${

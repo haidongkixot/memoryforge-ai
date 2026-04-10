@@ -1,25 +1,28 @@
 'use client'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 const BLOCK_COLORS = ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#A855F7', '#EC4899']
 
-export default function TowerBuilder({ onComplete }: Props) {
+export default function TowerBuilder({ onComplete, level = 1 }: Props) {
+  const maxHeight = Math.min(8 + Math.floor(level / 4), 15)
+  const lives = level <= 10 ? 3 : level <= 20 ? 2 : 1
+  const blockCount = maxHeight + 10 + Math.floor(level / 2)
+  const maxBlockVal = level <= 10 ? 9 : level <= 20 ? 12 : 15
+
   const [tower, setTower] = useState<number[]>([])
   const [incoming, setIncoming] = useState<number>(0)
   const [score, setScore] = useState(0)
-  const [lives, setLives] = useState(3)
+  const [livesLeft, setLivesLeft] = useState(lives)
   const [gameOver, setGameOver] = useState(false)
   const [queue, setQueue] = useState<number[]>([])
-  const maxHeight = 10
 
-  // Generate incoming blocks
   useEffect(() => {
-    const initial = Array.from({ length: 20 }, () => Math.floor(Math.random() * 9) + 1)
+    const initial = Array.from({ length: blockCount }, () => Math.floor(Math.random() * maxBlockVal) + 1)
     setQueue(initial)
     setIncoming(initial[0])
-  }, [])
+  }, [blockCount, maxBlockVal])
 
   const nextBlock = useCallback((currentQueue: number[]) => {
     const next = currentQueue.slice(1)
@@ -34,10 +37,9 @@ export default function TowerBuilder({ onComplete }: Props) {
   const handlePlace = useCallback(() => {
     if (gameOver) return
 
-    // Block must be >= top of tower (ascending from bottom)
     const topVal = tower.length > 0 ? tower[tower.length - 1] : 0
     if (incoming < topVal) {
-      setLives(l => {
+      setLivesLeft(l => {
         const newLives = l - 1
         if (newLives <= 0) {
           setGameOver(true)
@@ -52,25 +54,24 @@ export default function TowerBuilder({ onComplete }: Props) {
     const newTower = [...tower, incoming]
     setTower(newTower)
 
-    const heightBonus = newTower.length * 20
+    const heightBonus = newTower.length * (10 + Math.floor(level / 2))
     const newScore = score + heightBonus
     setScore(newScore)
 
     if (newTower.length >= maxHeight) {
       setGameOver(true)
-      setTimeout(() => onComplete(newScore + 200), 500) // Bonus for max height!
+      setTimeout(() => onComplete(newScore + 100 + level * 10), 500)
       return
     }
 
     nextBlock(queue)
-  }, [incoming, tower, score, gameOver, queue, nextBlock, onComplete])
+  }, [incoming, tower, score, gameOver, queue, nextBlock, maxHeight, level, onComplete])
 
   const handleSkip = useCallback(() => {
     if (gameOver) return
     nextBlock(queue)
   }, [gameOver, queue, nextBlock])
 
-  // Keyboard support
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === ' ' || e.key === 'Enter') handlePlace()
@@ -86,7 +87,7 @@ export default function TowerBuilder({ onComplete }: Props) {
         <span className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full font-semibold">Score: {score}</span>
         <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-semibold">Height: {tower.length}/{maxHeight}</span>
         <span className="bg-red-50 text-red-500 px-3 py-1 rounded-full font-semibold">
-          {'❤️'.repeat(lives)}{'🖤'.repeat(3 - lives)}
+          {'❤️'.repeat(livesLeft)}{'🖤'.repeat(lives - livesLeft)}
         </span>
       </div>
 
@@ -94,7 +95,6 @@ export default function TowerBuilder({ onComplete }: Props) {
         Stack blocks in ascending order! Each block must be ≥ the one below.
       </p>
 
-      {/* Incoming block */}
       {!gameOver && (
         <div className="text-center">
           <div className="text-xs text-[#6B7280] mb-1 font-semibold">Next Block</div>
@@ -105,9 +105,7 @@ export default function TowerBuilder({ onComplete }: Props) {
         </div>
       )}
 
-      {/* Tower display */}
       <div className="relative w-32 min-h-[200px] flex flex-col-reverse items-center bg-gray-50 rounded-xl border-2 border-gray-200 p-2 gap-1">
-        {/* Ground */}
         <div className="w-full h-2 bg-gray-300 rounded-full" />
 
         {tower.length === 0 && !gameOver && (
@@ -115,7 +113,7 @@ export default function TowerBuilder({ onComplete }: Props) {
         )}
 
         {tower.map((val, i) => {
-          const width = 50 + val * 5
+          const width = 50 + val * 3
           return (
             <div key={i}
               className="h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm transition-all"
@@ -129,7 +127,6 @@ export default function TowerBuilder({ onComplete }: Props) {
         })}
       </div>
 
-      {/* Controls */}
       {!gameOver ? (
         <div className="flex gap-3">
           <button onClick={handlePlace}

@@ -1,23 +1,27 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 type Color = 'red' | 'blue' | 'yellow'
 interface MixQ { target: string; targetColor: string; mix: [Color, Color]; opts: [Color, Color][] }
 
-const MIXES: MixQ[] = [
+const BASE_MIXES: MixQ[] = [
   { target: 'Green', targetColor: '#22C55E', mix: ['blue', 'yellow'], opts: [['red', 'blue'], ['blue', 'yellow'], ['red', 'yellow']] },
   { target: 'Orange', targetColor: '#F97316', mix: ['red', 'yellow'], opts: [['red', 'yellow'], ['blue', 'yellow'], ['red', 'blue']] },
   { target: 'Purple', targetColor: '#A855F7', mix: ['red', 'blue'], opts: [['red', 'blue'], ['red', 'yellow'], ['blue', 'yellow']] },
-  { target: 'Green', targetColor: '#22C55E', mix: ['yellow', 'blue'], opts: [['red', 'blue'], ['red', 'yellow'], ['yellow', 'blue']] },
-  { target: 'Orange', targetColor: '#F97316', mix: ['yellow', 'red'], opts: [['yellow', 'red'], ['blue', 'yellow'], ['red', 'blue']] },
-  { target: 'Purple', targetColor: '#A855F7', mix: ['blue', 'red'], opts: [['blue', 'yellow'], ['blue', 'red'], ['red', 'yellow']] },
-  { target: 'Green', targetColor: '#22C55E', mix: ['blue', 'yellow'], opts: [['red', 'yellow'], ['red', 'blue'], ['blue', 'yellow']] },
-  { target: 'Orange', targetColor: '#F97316', mix: ['red', 'yellow'], opts: [['blue', 'yellow'], ['red', 'blue'], ['red', 'yellow']] },
-  { target: 'Purple', targetColor: '#A855F7', mix: ['red', 'blue'], opts: [['red', 'yellow'], ['blue', 'yellow'], ['red', 'blue']] },
-  { target: 'Green', targetColor: '#22C55E', mix: ['yellow', 'blue'], opts: [['yellow', 'blue'], ['red', 'blue'], ['red', 'yellow']] },
 ]
+
+function generateRounds(level: number): MixQ[] {
+  const count = Math.min(6 + Math.floor(level / 3), 15)
+  const rounds: MixQ[] = []
+  for (let i = 0; i < count; i++) {
+    const base = BASE_MIXES[i % BASE_MIXES.length]
+    const shuffledOpts = [...base.opts].sort(() => Math.random() - 0.5)
+    rounds.push({ ...base, opts: shuffledOpts as [Color, Color][] })
+  }
+  return rounds
+}
 
 const COLOR_MAP: Record<string, string> = { red: '#EF4444', blue: '#3B82F6', yellow: '#EAB308' }
 
@@ -25,29 +29,26 @@ function mixMatch(a: [Color, Color], b: [Color, Color]) {
   return (a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0])
 }
 
-export default function ColorMixer({ onComplete }: Props) {
+export default function ColorMixer({ onComplete, level = 1 }: Props) {
+  const shuffled = useMemo(() => generateRounds(level), [level])
+  const total = shuffled.length
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [feedback, setFeedback] = useState<null | boolean>(null)
-  const [shuffled] = useState(() => [...MIXES].sort(() => Math.random() - 0.5))
-  const total = shuffled.length
+  const timeLimit = level <= 10 ? 0 : level <= 20 ? 10 : 7 // seconds, 0=no limit
 
   const handlePick = useCallback((opt: [Color, Color]) => {
     if (feedback !== null) return
     const correct = mixMatch(opt, shuffled[round].mix)
-    const pts = correct ? 100 : 0
+    const pts = correct ? 50 + level * 5 : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
     setTimeout(() => {
-      if (round + 1 >= total) {
-        onComplete(score + pts)
-      } else {
-        setRound(r => r + 1)
-        setFeedback(null)
-      }
+      if (round + 1 >= total) onComplete(score + pts)
+      else { setRound(r => r + 1); setFeedback(null) }
     }, 1200)
-  }, [round, total, feedback, score, shuffled, onComplete])
+  }, [round, total, feedback, score, shuffled, level, onComplete])
 
   const q = shuffled[round]
 

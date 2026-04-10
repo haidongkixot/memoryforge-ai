@@ -1,59 +1,70 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
-const PATTERNS = [
-  { seq: ['🐶', '🐱', '🐶', '🐱', '🐶'], answer: '🐱', opts: ['🐱', '🐶', '🐰', '🐸'] },
-  { seq: ['🔴', '🔵', '🔴', '🔵', '🔴'], answer: '🔵', opts: ['🔴', '🔵', '🟢', '🟡'] },
-  { seq: ['⭐', '⭐', '🌙', '⭐', '⭐'], answer: '🌙', opts: ['⭐', '🌙', '☀️', '🌍'] },
-  { seq: ['🍎', '🍊', '🍋', '🍎', '🍊'], answer: '🍋', opts: ['🍎', '🍊', '🍋', '🍇'] },
-  { seq: ['👆', '👇', '👆', '👇', '👆'], answer: '👇', opts: ['👆', '👇', '👈', '👉'] },
-  { seq: ['🌸', '🌸', '🌻', '🌻', '🌸'], answer: '🌸', opts: ['🌸', '🌻', '🌹', '🌺'] },
-  { seq: ['1️⃣', '2️⃣', '3️⃣', '1️⃣', '2️⃣'], answer: '3️⃣', opts: ['1️⃣', '2️⃣', '3️⃣', '4️⃣'] },
-  { seq: ['🐟', '🐟', '🐙', '🐟', '🐟'], answer: '🐙', opts: ['🐟', '🐙', '🦀', '🐳'] },
-  { seq: ['🎵', '🎶', '🎵', '🎶', '🎵'], answer: '🎶', opts: ['🎵', '🎶', '🔔', '🎺'] },
-  { seq: ['🟩', '🟨', '🟩', '🟨', '🟩'], answer: '🟨', opts: ['🟩', '🟨', '🟦', '🟥'] },
-  { seq: ['🚗', '🚌', '🚗', '🚌', '🚗'], answer: '🚌', opts: ['🚗', '🚌', '🚀', '✈️'] },
-  { seq: ['😊', '😢', '😊', '😢', '😊'], answer: '😢', opts: ['😊', '😢', '😡', '😴'] },
+const EMOJI_SETS = [
+  ['🐶', '🐱', '🐰', '🐸', '🐵'], ['🍎', '🍊', '🍋', '🍇', '🍓'], ['⭐', '🌙', '☀️', '🌍', '💫'],
+  ['🔴', '🔵', '🟢', '🟡', '🟣'], ['👆', '👇', '👈', '👉', '🤚'], ['🌸', '🌻', '🌹', '🌺', '🌷'],
+  ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'], ['🐟', '🐙', '🦀', '🐳', '🦈'], ['🎵', '🎶', '🔔', '🎺', '🥁'],
+  ['🚗', '🚌', '🚀', '✈️', '🚂'], ['😊', '😢', '😡', '😴', '🤩'], ['🏠', '🏰', '🏫', '🏥', '⛪'],
+  ['🎨', '🖌️', '🎭', '🎪', '🎬'], ['💎', '🔮', '💰', '👑', '🏆'], ['🌈', '☁️', '🌧️', '❄️', '⚡'],
 ]
 
-export default function EmojiPattern({ onComplete }: Props) {
+function generatePattern(level: number, seed: number) {
+  const setIdx = (seed * 7 + level) % EMOJI_SETS.length
+  const emojis = EMOJI_SETS[setIdx]
+  const seqLen = Math.min(3 + Math.floor(level / 5), 7) // 3→7 items in pattern unit
+  const patternLen = level <= 10 ? 5 : level <= 20 ? 6 : 7 // visible sequence length
+  const uniqueCount = Math.min(2 + Math.floor(level / 8), 4) // how many unique emojis used
+
+  const base = emojis.slice(0, uniqueCount)
+  const pattern: string[] = []
+  for (let i = 0; i < patternLen; i++) pattern.push(base[i % base.length])
+  const answer = base[patternLen % base.length]
+
+  const opts = [answer]
+  const available = emojis.filter(e => !opts.includes(e))
+  while (opts.length < 4 && available.length > 0) {
+    opts.push(available.splice(Math.floor(Math.random() * available.length), 1)[0])
+  }
+  while (opts.length < 4) opts.push(emojis[opts.length % emojis.length])
+
+  return { seq: pattern, answer, opts: opts.sort(() => Math.random() - 0.5) }
+}
+
+export default function EmojiPattern({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(6 + Math.floor(level / 3), 15) // 6→15 rounds
+  const puzzles = useMemo(() => Array.from({ length: rounds }, (_, i) => generatePattern(level, i + level * 100)), [level, rounds])
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [feedback, setFeedback] = useState<null | boolean>(null)
-  const [shuffled] = useState(() => [...PATTERNS].sort(() => Math.random() - 0.5).slice(0, 10))
-  const total = shuffled.length
 
   const handlePick = useCallback((opt: string) => {
     if (feedback !== null) return
-    const correct = opt === shuffled[round].answer
-    const pts = correct ? 100 : 0
+    const correct = opt === puzzles[round].answer
+    const pts = correct ? 50 + level * 5 : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
     setTimeout(() => {
-      if (round + 1 >= total) {
-        onComplete(score + pts)
-      } else {
-        setRound(r => r + 1)
-        setFeedback(null)
-      }
+      if (round + 1 >= rounds) onComplete(score + pts)
+      else { setRound(r => r + 1); setFeedback(null) }
     }, 1000)
-  }, [round, total, feedback, score, shuffled, onComplete])
+  }, [round, rounds, feedback, score, puzzles, level, onComplete])
 
-  const pattern = shuffled[round]
+  const pattern = puzzles[round]
 
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="flex items-center justify-between w-full max-w-md text-sm">
-        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-semibold">Round {round + 1}/{total}</span>
+        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-semibold">Round {round + 1}/{rounds}</span>
         <span className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full font-semibold">Score: {score}</span>
       </div>
 
       <p className="text-[#6B7280] font-medium">What comes next in the pattern?</p>
 
-      <div className="flex items-center gap-2 bg-gray-50 px-6 py-4 rounded-2xl">
+      <div className="flex items-center gap-2 bg-gray-50 px-6 py-4 rounded-2xl flex-wrap justify-center">
         {pattern.seq.map((e, i) => (
           <span key={i} className="text-3xl sm:text-4xl">{e}</span>
         ))}

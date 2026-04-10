@@ -1,24 +1,36 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
-const WORDS = [
-  { word: 'APPLE', hint: '🍎 A red fruit' },
-  { word: 'HOUSE', hint: '🏠 You live here' },
-  { word: 'WATER', hint: '💧 You drink this' },
-  { word: 'HAPPY', hint: '😊 A feeling of joy' },
-  { word: 'TIGER', hint: '🐯 A big striped cat' },
-  { word: 'MUSIC', hint: '🎵 You hear this' },
-  { word: 'CLOUD', hint: '☁️ In the sky' },
-  { word: 'BEACH', hint: '🏖️ Sand and waves' },
-  { word: 'GREEN', hint: '🟢 A color of grass' },
-  { word: 'LIGHT', hint: '💡 The opposite of dark' },
-  { word: 'PLANT', hint: '🌱 It grows in soil' },
-  { word: 'SMILE', hint: '😄 What you do when happy' },
-  { word: 'DREAM', hint: '💭 You have this when sleeping' },
-  { word: 'BRAIN', hint: '🧠 Your thinking organ' },
+const WORDS_SHORT = [
+  { word: 'CAT', hint: '🐱 A furry pet' }, { word: 'DOG', hint: '🐶 Man\'s best friend' },
+  { word: 'SUN', hint: '☀️ Bright in sky' }, { word: 'CUP', hint: '🥤 You drink from it' },
+  { word: 'HAT', hint: '🎩 Wear on head' }, { word: 'BEE', hint: '🐝 Makes honey' },
+  { word: 'MAP', hint: '🗺️ Shows directions' }, { word: 'RUN', hint: '🏃 Move fast' },
+  { word: 'BIG', hint: '📏 Not small' }, { word: 'RED', hint: '🔴 A color' },
+]
+
+const WORDS_MEDIUM = [
+  { word: 'APPLE', hint: '🍎 A red fruit' }, { word: 'HOUSE', hint: '🏠 You live here' },
+  { word: 'WATER', hint: '💧 You drink this' }, { word: 'HAPPY', hint: '😊 A feeling of joy' },
+  { word: 'TIGER', hint: '🐯 A big striped cat' }, { word: 'MUSIC', hint: '🎵 You hear this' },
+  { word: 'CLOUD', hint: '☁️ In the sky' }, { word: 'BEACH', hint: '🏖️ Sand and waves' },
+  { word: 'GREEN', hint: '🟢 A color of grass' }, { word: 'LIGHT', hint: '💡 The opposite of dark' },
+  { word: 'PLANT', hint: '🌱 It grows in soil' }, { word: 'SMILE', hint: '😄 What you do when happy' },
+  { word: 'DREAM', hint: '💭 You have this sleeping' }, { word: 'BRAIN', hint: '🧠 Your thinking organ' },
   { word: 'SPACE', hint: '🚀 Where stars live' },
+]
+
+const WORDS_LONG = [
+  { word: 'PLANET', hint: '🌍 Earth is one' }, { word: 'JUNGLE', hint: '🌴 Dense forest' },
+  { word: 'CASTLE', hint: '🏰 Where kings live' }, { word: 'MONKEY', hint: '🐵 Swings in trees' },
+  { word: 'ROCKET', hint: '🚀 Goes to space' }, { word: 'GARDEN', hint: '🌻 Flowers grow here' },
+  { word: 'DRAGON', hint: '🐉 Mythical beast' }, { word: 'BRIDGE', hint: '🌉 Crosses a river' },
+  { word: 'FROZEN', hint: '❄️ Turned to ice' }, { word: 'SCHOOL', hint: '🏫 Where you learn' },
+  { word: 'PIRATE', hint: '🏴‍☠️ Sails the seas' }, { word: 'FOREST', hint: '🌲 Full of trees' },
+  { word: 'ISLAND', hint: '🏝️ Land in water' }, { word: 'KNIGHT', hint: '⚔️ Wears armor' },
+  { word: 'PURPLE', hint: '🟣 A royal color' },
 ]
 
 function scramble(word: string): string {
@@ -30,24 +42,27 @@ function scramble(word: string): string {
   return arr.join('') === word ? scramble(word) : arr.join('')
 }
 
-export default function WordScramble({ onComplete }: Props) {
+export default function WordScramble({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(6 + Math.floor(level / 3), 15)
+  const wordPool = level <= 10 ? WORDS_SHORT : level <= 20 ? WORDS_MEDIUM : WORDS_LONG
+
+  const shuffled = useMemo(() =>
+    [...wordPool].sort(() => Math.random() - 0.5).slice(0, rounds).map(w => ({
+      ...w,
+      scrambled: scramble(w.word),
+    })), [level, rounds])
+
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [input, setInput] = useState('')
   const [feedback, setFeedback] = useState<null | boolean>(null)
   const [showHint, setShowHint] = useState(false)
-  const [shuffled] = useState(() =>
-    [...WORDS].sort(() => Math.random() - 0.5).slice(0, 10).map(w => ({
-      ...w,
-      scrambled: scramble(w.word),
-    }))
-  )
   const total = shuffled.length
 
   const handleSubmit = useCallback(() => {
     if (feedback !== null || !input.trim()) return
     const correct = input.toUpperCase().trim() === shuffled[round].word
-    const pts = correct ? (showHint ? 50 : 100) : 0
+    const pts = correct ? (showHint ? Math.round((50 + level * 5) / 2) : 50 + level * 5) : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
@@ -55,7 +70,7 @@ export default function WordScramble({ onComplete }: Props) {
       if (round + 1 >= total) onComplete(score + pts)
       else { setRound(r => r + 1); setInput(''); setFeedback(null); setShowHint(false) }
     }, 1200)
-  }, [input, round, total, feedback, score, shuffled, showHint, onComplete])
+  }, [input, round, total, feedback, score, shuffled, showHint, level, onComplete])
 
   const w = shuffled[round]
 
@@ -68,7 +83,6 @@ export default function WordScramble({ onComplete }: Props) {
 
       <p className="text-[#6B7280] font-medium">Unscramble the letters to make a word!</p>
 
-      {/* Scrambled letters */}
       <div className="flex gap-2 justify-center">
         {w.scrambled.split('').map((letter, i) => (
           <span key={i}
@@ -78,14 +92,12 @@ export default function WordScramble({ onComplete }: Props) {
         ))}
       </div>
 
-      {/* Hint */}
       {showHint && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2 text-yellow-700 text-sm">
           💡 Hint: {w.hint}
         </div>
       )}
 
-      {/* Input */}
       <div className="flex gap-2 w-full max-w-sm">
         <input
           type="text"

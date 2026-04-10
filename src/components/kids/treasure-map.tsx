@@ -1,19 +1,19 @@
 'use client'
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 type Dir = 'up' | 'down' | 'left' | 'right'
 const DIR_EMOJI: Record<Dir, string> = { up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️' }
 const DIR_DELTA: Record<Dir, [number, number]> = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] }
 
-function genRound(size: number): { dirs: Dir[]; start: [number, number]; end: [number, number] } {
+function genRound(size: number, level: number): { dirs: Dir[]; start: [number, number]; end: [number, number] } {
   const start: [number, number] = [Math.floor(Math.random() * size), Math.floor(Math.random() * size)]
   const allDirs: Dir[] = ['up', 'down', 'left', 'right']
   const dirs: Dir[] = []
   let pos = [...start]
 
-  const steps = 3 + Math.floor(Math.random() * 3)
+  const steps = Math.min(3 + Math.floor(level / 5), 8)
   for (let i = 0; i < steps; i++) {
     const valid = allDirs.filter(d => {
       const nr = pos[0] + DIR_DELTA[d][0]
@@ -29,13 +29,15 @@ function genRound(size: number): { dirs: Dir[]; start: [number, number]; end: [n
   return { dirs, start, end: [pos[0], pos[1]] as [number, number] }
 }
 
-export default function TreasureMap({ onComplete }: Props) {
+export default function TreasureMap({ onComplete, level = 1 }: Props) {
+  const totalRounds = Math.min(6 + Math.floor(level / 3), 15)
+  const size = level <= 10 ? 4 : level <= 20 ? 5 : 6
+  const studyBase = level <= 10 ? 3500 : level <= 20 ? 3000 : 2500
+
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [phase, setPhase] = useState<'study' | 'play' | 'result'>('study')
-  const size = 5
-  const total = 8
-  const [rounds] = useState(() => Array.from({ length: total }, () => genRound(size)))
+  const rounds = useMemo(() => Array.from({ length: totalRounds }, () => genRound(size, level)), [level, totalRounds, size])
   const [pos, setPos] = useState<[number, number]>(rounds[0].start)
   const [moveCount, setMoveCount] = useState(0)
   const [trail, setTrail] = useState<Set<string>>(new Set())
@@ -47,9 +49,9 @@ export default function TreasureMap({ onComplete }: Props) {
       setPos([...rounds[round].start] as [number, number])
       setTrail(new Set([`${rounds[round].start[0]},${rounds[round].start[1]}`]))
       setMoveCount(0)
-    }, 3000 + rounds[round].dirs.length * 500)
+    }, studyBase + rounds[round].dirs.length * 400)
     return () => clearTimeout(t)
-  }, [phase, round, rounds])
+  }, [phase, round, rounds, studyBase])
 
   const move = useCallback((dir: Dir) => {
     if (phase !== 'play') return
@@ -67,26 +69,26 @@ export default function TreasureMap({ onComplete }: Props) {
     if (nr === target[0] && nc === target[1]) {
       setPhase('result')
       const optimal = rounds[round].dirs.length
-      const bonus = Math.max(0, 100 - Math.abs(moveCount + 1 - optimal) * 15)
+      const bonus = Math.max(0, (50 + level * 5) - Math.abs(moveCount + 1 - optimal) * 10)
       const newScore = score + bonus
       setScore(newScore)
 
       setTimeout(() => {
-        if (round + 1 >= total) onComplete(newScore)
+        if (round + 1 >= totalRounds) onComplete(newScore)
         else {
           setRound(r => r + 1)
           setPhase('study')
         }
       }, 1500)
     }
-  }, [phase, pos, round, rounds, size, moveCount, score, total, onComplete])
+  }, [phase, pos, round, rounds, size, moveCount, score, totalRounds, level, onComplete])
 
   const r = rounds[round]
 
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex items-center justify-between w-full max-w-md text-sm">
-        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-semibold">Map {round + 1}/{total}</span>
+        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-semibold">Map {round + 1}/{totalRounds}</span>
         <span className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full font-semibold">Score: {score}</span>
       </div>
 
@@ -119,10 +121,11 @@ export default function TreasureMap({ onComplete }: Props) {
               let bg = '#FEF3C7'
               if (isTrail) bg = '#FDE68A'
               if (isStart && !isPlayer) bg = '#BBF7D0'
+              const cellSize = size <= 4 ? 'w-12 h-12 sm:w-13 sm:h-13' : size <= 5 ? 'w-10 h-10 sm:w-11 sm:h-11' : 'w-8 h-8 sm:w-9 sm:h-9'
 
               return (
                 <div key={idx}
-                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center text-lg"
+                  className={`${cellSize} rounded-lg flex items-center justify-center text-lg`}
                   style={{ backgroundColor: bg }}>
                   {isPlayer && '🧭'}
                   {isTreasure && !isPlayer && '💎'}

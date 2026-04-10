@@ -1,48 +1,55 @@
 'use client'
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 const PADS = [
   { color: '#EF4444', glow: 'shadow-[0_0_20px_rgba(239,68,68,0.7)]', label: '🔴' },
   { color: '#3B82F6', glow: 'shadow-[0_0_20px_rgba(59,130,246,0.7)]', label: '🔵' },
   { color: '#22C55E', glow: 'shadow-[0_0_20px_rgba(34,197,94,0.7)]', label: '🟢' },
   { color: '#EAB308', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.7)]', label: '🟡' },
+  { color: '#A855F7', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.7)]', label: '🟣' },
+  { color: '#F97316', glow: 'shadow-[0_0_20px_rgba(249,115,22,0.7)]', label: '🟠' },
 ]
 
-export default function RhythmRepeat({ onComplete }: Props) {
+export default function RhythmRepeat({ onComplete, level = 1 }: Props) {
+  const padCount = level <= 10 ? 4 : level <= 20 ? 5 : 6
+  const startLen = 1 + Math.floor(level / 10) // 1-4 starting sequence
+  const showSpeed = level <= 10 ? 500 : level <= 20 ? 400 : 300 // ms per pad show
+  const activePads = useMemo(() => PADS.slice(0, padCount), [padCount])
+
   const [sequence, setSequence] = useState<number[]>([])
   const [playerInput, setPlayerInput] = useState<number[]>([])
   const [phase, setPhase] = useState<'ready' | 'showing' | 'input' | 'correct' | 'wrong'>('ready')
   const [activePad, setActivePad] = useState<number | null>(null)
-  const [level, setLevel] = useState(1)
+  const [seqLevel, setSeqLevel] = useState(1)
   const [score, setScore] = useState(0)
   const isAnimating = useRef(false)
 
   const playSequence = useCallback(async (seq: number[]) => {
     isAnimating.current = true
     setPhase('showing')
-    await new Promise(r => setTimeout(r, 500))
+    await new Promise(r => setTimeout(r, 400))
 
     for (let i = 0; i < seq.length; i++) {
       setActivePad(seq[i])
-      await new Promise(r => setTimeout(r, 500))
+      await new Promise(r => setTimeout(r, showSpeed))
       setActivePad(null)
-      await new Promise(r => setTimeout(r, 200))
+      await new Promise(r => setTimeout(r, 150))
     }
 
     isAnimating.current = false
     setPhase('input')
-  }, [])
+  }, [showSpeed])
 
   const startGame = useCallback(() => {
-    const first = [Math.floor(Math.random() * 4)]
+    const first: number[] = Array.from({ length: startLen }, () => Math.floor(Math.random() * padCount))
     setSequence(first)
     setPlayerInput([])
-    setLevel(1)
+    setSeqLevel(1)
     setScore(0)
     playSequence(first)
-  }, [playSequence])
+  }, [playSequence, startLen, padCount])
 
   const handlePadClick = useCallback((padIdx: number) => {
     if (phase !== 'input') return
@@ -62,25 +69,25 @@ export default function RhythmRepeat({ onComplete }: Props) {
 
     if (newInput.length === sequence.length) {
       setPhase('correct')
-      const roundScore = level * 50
+      const roundScore = (50 + level * 5) + seqLevel * 10
       const newScore = score + roundScore
       setScore(newScore)
-      setLevel(l => l + 1)
+      setSeqLevel(l => l + 1)
 
       setTimeout(() => {
-        const nextStep = Math.floor(Math.random() * 4)
+        const nextStep = Math.floor(Math.random() * padCount)
         const newSeq = [...sequence, nextStep]
         setSequence(newSeq)
         setPlayerInput([])
         playSequence(newSeq)
       }, 1000)
     }
-  }, [phase, playerInput, sequence, level, score, playSequence, onComplete])
+  }, [phase, playerInput, sequence, seqLevel, score, padCount, level, playSequence, onComplete])
 
   return (
     <div className="flex flex-col items-center gap-5">
       <div className="flex items-center justify-between w-full max-w-md text-sm">
-        <span className="bg-purple-50 text-purple-600 px-3 py-1 rounded-full font-semibold">Level {level}</span>
+        <span className="bg-purple-50 text-purple-600 px-3 py-1 rounded-full font-semibold">Seq Level {seqLevel}</span>
         <span className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full font-semibold">Score: {score}</span>
         <span className={`px-3 py-1 rounded-full font-semibold ${
           phase === 'showing' ? 'bg-yellow-50 text-yellow-600' :
@@ -105,7 +112,6 @@ export default function RhythmRepeat({ onComplete }: Props) {
 
       {phase !== 'ready' && (
         <>
-          {/* Sequence indicator */}
           <div className="flex gap-1">
             {sequence.map((_, i) => (
               <div key={i} className={`w-3 h-3 rounded-full ${
@@ -114,9 +120,8 @@ export default function RhythmRepeat({ onComplete }: Props) {
             ))}
           </div>
 
-          {/* Pads */}
-          <div className="grid grid-cols-2 gap-4">
-            {PADS.map((pad, i) => (
+          <div className={`grid gap-4 ${padCount <= 4 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            {activePads.map((pad, i) => (
               <button key={i}
                 onClick={() => handlePadClick(i)}
                 disabled={phase !== 'input'}
@@ -138,7 +143,7 @@ export default function RhythmRepeat({ onComplete }: Props) {
       {phase === 'wrong' && (
         <div className="text-center">
           <div className="text-xl font-bold text-red-400 mb-1">Oops! 😅</div>
-          <div className="text-[#6B7280]">You reached level {level}! Amazing effort!</div>
+          <div className="text-[#6B7280]">You reached sequence level {seqLevel}! Amazing effort!</div>
         </div>
       )}
     </div>

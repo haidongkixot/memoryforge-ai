@@ -1,7 +1,7 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 interface EmoQ { scenario: string; answer: string; opts: string[]; explanation: string }
 
@@ -18,19 +18,26 @@ const QUESTIONS: EmoQ[] = [
   { scenario: '🎨 You finished painting a beautiful picture', answer: '😊', opts: ['😊', '😨', '😢', '😡'], explanation: 'Creating art feels great!' },
   { scenario: '👋 Your best friend is moving away', answer: '😢', opts: ['😊', '😢', '🤩', '😡'], explanation: 'Missing friends makes us sad' },
   { scenario: '🧪 You have a big test tomorrow', answer: '😰', opts: ['😊', '🥱', '😰', '🤩'], explanation: 'Tests can be nerve-wracking' },
+  { scenario: '🎁 You got the gift you always wanted!', answer: '🤩', opts: ['🤩', '😢', '😡', '😰'], explanation: 'Dreams coming true is exciting!' },
+  { scenario: '🏃 You came last in the race', answer: '😞', opts: ['😊', '😞', '🥱', '🤩'], explanation: 'It\'s okay to feel disappointed' },
+  { scenario: '🎵 Your favorite song comes on the radio', answer: '😊', opts: ['😊', '😡', '😰', '😢'], explanation: 'Music lifts our mood!' },
+  { scenario: '🐛 A spider is crawling on your desk', answer: '😨', opts: ['😊', '🥱', '😨', '🤩'], explanation: 'Bugs can be startling!' },
+  { scenario: '🏅 Your team won the championship!', answer: '🤩', opts: ['😢', '🤩', '😡', '😰'], explanation: 'Team victories feel amazing!' },
+  { scenario: '📵 Your parents took away your tablet', answer: '😡', opts: ['😊', '😡', '🤩', '🥱'], explanation: 'Losing privileges is frustrating' },
 ]
 
-export default function EmotionDetective({ onComplete }: Props) {
+export default function EmotionDetective({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(6 + Math.floor(level / 3), 15)
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [feedback, setFeedback] = useState<null | boolean>(null)
-  const [shuffled] = useState(() => [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 10))
+  const shuffled = useMemo(() => [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, rounds), [level, rounds])
   const total = shuffled.length
 
   const handlePick = useCallback((opt: string) => {
     if (feedback !== null) return
     const correct = opt === shuffled[round].answer
-    const pts = correct ? 100 : 0
+    const pts = correct ? 50 + level * 5 : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
@@ -38,7 +45,7 @@ export default function EmotionDetective({ onComplete }: Props) {
       if (round + 1 >= total) onComplete(score + pts)
       else { setRound(r => r + 1); setFeedback(null) }
     }, 2000)
-  }, [round, total, feedback, score, shuffled, onComplete])
+  }, [round, total, feedback, score, shuffled, level, onComplete])
 
   const q = shuffled[round]
 

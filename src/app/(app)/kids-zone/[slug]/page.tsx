@@ -26,9 +26,10 @@ import EmotionDetective from '@/components/kids/emotion-detective'
 
 interface Game {
   id: string; name: string; slug: string; description: string
-  benefits: string[]; rules: string[]; gameType: string
+  benefits: string[]; rules: string[]; gameType: string; maxLevel: number
 }
 
+const MAX_LEVEL = 30
 const CHEERS = ['Amazing! 🌟', 'Super Star! ⭐', 'Brilliant! 🎉', 'Wonderful! 🏆', 'You Rock! 🚀', 'Fantastic! 💫', 'Genius! 🧠', 'Incredible! 🌈']
 const GAME_ICONS: Record<string, string> = {
   'emoji-pattern': '🔮', 'color-mixer': '🎨', 'animal-sort': '🦁', 'shape-builder': '🔷',
@@ -38,13 +39,22 @@ const GAME_ICONS: Record<string, string> = {
   'word-chain': '🔗', 'guess-rule': '🧩', 'tower-builder': '🏗️', 'emotion-detective': '😊',
 }
 
+function tierLabel(level: number) {
+  if (level <= 10) return { text: 'Easy', color: 'text-green-500', bg: 'bg-green-50' }
+  if (level <= 20) return { text: 'Medium', color: 'text-amber-500', bg: 'bg-amber-50' }
+  return { text: 'Hard', color: 'text-red-500', bg: 'bg-red-50' }
+}
+
 export default function KidsPlayPage() {
   const params = useParams()
   const router = useRouter()
   const [game, setGame] = useState<Game | null>(null)
   const [phase, setPhase] = useState<'info' | 'playing' | 'complete'>('info')
+  const [level, setLevel] = useState(1)
   const [score, setScore] = useState(0)
-  const [cheer] = useState(() => CHEERS[Math.floor(Math.random() * CHEERS.length)])
+  const [totalScore, setTotalScore] = useState(0)
+  const [cheer, setCheer] = useState(() => CHEERS[Math.floor(Math.random() * CHEERS.length)])
+  const [gameKey, setGameKey] = useState(0) // force remount on level change
 
   useEffect(() => {
     fetch(`/api/exercises?slug=${params.slug}`)
@@ -55,13 +65,35 @@ export default function KidsPlayPage() {
 
   const handleComplete = (finalScore: number) => {
     setScore(finalScore)
+    setTotalScore(t => t + finalScore)
+    setCheer(CHEERS[Math.floor(Math.random() * CHEERS.length)])
     setPhase('complete')
-    // No session tracking — kids zone is free and outside training system
+  }
+
+  const handleNextLevel = () => {
+    const next = Math.min(level + 1, MAX_LEVEL)
+    setLevel(next)
+    setScore(0)
+    setGameKey(k => k + 1)
+    setPhase('playing')
+  }
+
+  const handleReplay = () => {
+    setScore(0)
+    setGameKey(k => k + 1)
+    setPhase('playing')
+  }
+
+  const handlePickLevel = (lv: number) => {
+    setLevel(lv)
+    setScore(0)
+    setGameKey(k => k + 1)
+    setPhase('playing')
   }
 
   const renderGame = () => {
     if (!game) return null
-    const props = { onComplete: handleComplete }
+    const props = { onComplete: handleComplete, level, key: gameKey }
     switch (game.gameType) {
       case 'kids_pattern': return <EmojiPattern {...props} />
       case 'kids_color_mix': return <ColorMixer {...props} />
@@ -94,6 +126,7 @@ export default function KidsPlayPage() {
   )
 
   const icon = GAME_ICONS[game.slug] || '🎮'
+  const tier = tierLabel(level)
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -118,8 +151,35 @@ export default function KidsPlayPage() {
               </ul>
             </div>
           </div>
+
+          {/* Level selector */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-[#6B7280] uppercase mb-3 text-center">Choose Your Level</h3>
+            <div className="flex flex-wrap gap-1.5 justify-center max-w-lg mx-auto">
+              {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map(lv => {
+                const t = tierLabel(lv)
+                const isSelected = lv === level
+                return (
+                  <button key={lv} onClick={() => setLevel(lv)}
+                    className={`w-9 h-9 rounded-lg text-sm font-bold transition-all ${
+                      isSelected
+                        ? 'bg-gradient-to-br from-orange-400 to-pink-400 text-white scale-110 shadow-md'
+                        : `${t.bg} ${t.color} hover:scale-105`
+                    }`}>
+                    {lv}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="text-center mt-2">
+              <span className={`text-sm font-semibold ${tier.color}`}>
+                Level {level} — {tier.text} {level <= 10 ? '🟢' : level <= 20 ? '🟡' : '🔴'}
+              </span>
+            </div>
+          </div>
+
           <div className="text-center">
-            <button onClick={() => setPhase('playing')}
+            <button onClick={() => { setGameKey(k => k + 1); setPhase('playing') }}
               className="bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white px-10 py-4 rounded-full text-xl font-extrabold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
               Let&apos;s Go! 🚀
             </button>
@@ -129,8 +189,16 @@ export default function KidsPlayPage() {
 
       {phase === 'playing' && (
         <div className="bg-white border-2 border-orange-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-bold text-[#1f2937]">{icon} {game.name}</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{icon}</span>
+              <h2 className="text-lg font-bold text-[#1f2937]">{game.name}</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${tier.bg} ${tier.color}`}>
+                Lv.{level} {tier.text}
+              </span>
+            </div>
           </div>
           {renderGame()}
         </div>
@@ -142,11 +210,29 @@ export default function KidsPlayPage() {
           <h2 className="text-3xl font-extrabold bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 bg-clip-text text-transparent mb-2">
             {cheer}
           </h2>
-          <p className="text-[#6B7280] text-lg mb-6">You did an awesome job!</p>
+          <p className="text-[#6B7280] text-lg mb-2">Level {level} Complete!</p>
 
-          <div className="inline-block bg-gradient-to-r from-orange-400 to-pink-400 rounded-2xl p-6 mb-8">
-            <div className="text-5xl font-extrabold text-white">{score}</div>
-            <div className="text-white/80 text-sm font-semibold mt-1">Points Earned ⭐</div>
+          <div className="flex justify-center gap-4 mb-6">
+            <div className="bg-gradient-to-r from-orange-400 to-pink-400 rounded-2xl px-6 py-4">
+              <div className="text-4xl font-extrabold text-white">{score}</div>
+              <div className="text-white/80 text-xs font-semibold mt-1">This Level ⭐</div>
+            </div>
+            <div className="bg-gradient-to-r from-purple-400 to-blue-400 rounded-2xl px-6 py-4">
+              <div className="text-4xl font-extrabold text-white">{totalScore}</div>
+              <div className="text-white/80 text-xs font-semibold mt-1">Total Score 🏆</div>
+            </div>
+          </div>
+
+          {/* Level progress bar */}
+          <div className="max-w-sm mx-auto mb-6">
+            <div className="flex items-center justify-between text-xs text-[#6B7280] mb-1">
+              <span>Level Progress</span>
+              <span>{level}/{MAX_LEVEL}</span>
+            </div>
+            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-pink-400 transition-all duration-500"
+                style={{ width: `${(level / MAX_LEVEL) * 100}%` }} />
+            </div>
           </div>
 
           <div className="flex flex-wrap justify-center gap-3 mb-6">
@@ -155,10 +241,21 @@ export default function KidsPlayPage() {
             ))}
           </div>
 
-          <div className="flex justify-center gap-4">
-            <button onClick={() => { setPhase('playing'); setScore(0) }}
+          <div className="flex flex-wrap justify-center gap-3">
+            {level < MAX_LEVEL && (
+              <button onClick={handleNextLevel}
+                className="bg-gradient-to-r from-green-400 to-cyan-400 hover:from-green-500 hover:to-cyan-500 text-white px-8 py-3 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
+                Next Level! ⬆️ Lv.{level + 1}
+              </button>
+            )}
+            {level >= MAX_LEVEL && (
+              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg">
+                🏆 All 30 Levels Complete! 🏆
+              </div>
+            )}
+            <button onClick={handleReplay}
               className="bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white px-8 py-3 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
-              Play Again! 🔄
+              Replay Lv.{level} 🔄
             </button>
             <button onClick={() => router.push('/kids-zone')}
               className="border-2 border-orange-300 hover:border-orange-400 text-orange-500 hover:text-orange-600 px-8 py-3 rounded-full font-bold text-lg transition-all hover:scale-105 active:scale-95">

@@ -1,38 +1,44 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 interface CodeQ { encoded: string; answer: string; hint: string }
 
-// A=1, B=2, ..., Z=26
 function encode(word: string): string {
   return word.split('').map(c => c.charCodeAt(0) - 64).join(' - ')
 }
 
-const WORDS = ['CAT', 'DOG', 'SUN', 'BEE', 'HAT', 'RED', 'BIG', 'CUP', 'FUN', 'MAP', 'RUN', 'ZIP']
-
-const QUESTIONS: CodeQ[] = WORDS.map(w => ({
-  encoded: encode(w),
-  answer: w,
-  hint: `${w.length} letters, starts with ${w[0]}`,
-}))
+const WORDS_EASY = ['CAT', 'DOG', 'SUN', 'BEE', 'HAT', 'RED', 'BIG', 'CUP', 'FUN', 'MAP', 'RUN', 'ZIP']
+const WORDS_MED = ['APPLE', 'HOUSE', 'BRAIN', 'DREAM', 'LIGHT', 'MUSIC', 'PLANT', 'SPACE', 'WATER', 'GREEN', 'SMILE', 'CLOUD']
+const WORDS_HARD = ['CASTLE', 'BRIDGE', 'JUNGLE', 'KNIGHT', 'PLANET', 'ROCKET', 'SCHOOL', 'FROZEN', 'GARDEN', 'PIRATE', 'FOREST', 'ISLAND']
 
 const ALPHABET_CHART = 'A=1  B=2  C=3  D=4  E=5  F=6  G=7  H=8  I=9  J=10  K=11  L=12  M=13  N=14  O=15  P=16  Q=17  R=18  S=19  T=20  U=21  V=22  W=23  X=24  Y=25  Z=26'
 
-export default function CodeBreaker({ onComplete }: Props) {
+export default function CodeBreaker({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(6 + Math.floor(level / 3), 15)
+  const wordPool = level <= 10 ? WORDS_EASY : level <= 20 ? WORDS_MED : WORDS_HARD
+
+  const shuffled = useMemo(() => {
+    const words = [...wordPool].sort(() => Math.random() - 0.5).slice(0, rounds)
+    return words.map(w => ({
+      encoded: encode(w),
+      answer: w,
+      hint: `${w.length} letters, starts with ${w[0]}`,
+    }))
+  }, [level, rounds])
+
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [input, setInput] = useState('')
   const [feedback, setFeedback] = useState<null | boolean>(null)
   const [showChart, setShowChart] = useState(false)
-  const [shuffled] = useState(() => [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 10))
   const total = shuffled.length
 
   const handleSubmit = useCallback(() => {
     if (feedback !== null || !input.trim()) return
     const correct = input.toUpperCase().trim() === shuffled[round].answer
-    const pts = correct ? (showChart ? 50 : 100) : 0
+    const pts = correct ? (showChart ? Math.round((50 + level * 5) / 2) : 50 + level * 5) : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
@@ -40,7 +46,7 @@ export default function CodeBreaker({ onComplete }: Props) {
       if (round + 1 >= total) onComplete(score + pts)
       else { setRound(r => r + 1); setInput(''); setFeedback(null); setShowChart(false) }
     }, 1200)
-  }, [input, round, total, feedback, score, shuffled, showChart, onComplete])
+  }, [input, round, total, feedback, score, shuffled, showChart, level, onComplete])
 
   const q = shuffled[round]
 
@@ -56,15 +62,12 @@ export default function CodeBreaker({ onComplete }: Props) {
         <p className="text-xs text-[#9CA3AF]">A=1, B=2, C=3 ... Z=26</p>
       </div>
 
-      {/* Encoded message */}
       <div className="bg-gray-900 text-green-400 font-mono text-3xl sm:text-4xl px-8 py-5 rounded-2xl tracking-wider shadow-lg">
         {q.encoded}
       </div>
 
-      {/* Hint */}
       <p className="text-sm text-[#9CA3AF]">💡 {q.hint}</p>
 
-      {/* Alphabet chart toggle */}
       {showChart ? (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2 text-xs text-yellow-700 font-mono max-w-md text-center">
           {ALPHABET_CHART}
@@ -76,7 +79,6 @@ export default function CodeBreaker({ onComplete }: Props) {
         </button>
       )}
 
-      {/* Input */}
       <div className="flex gap-2 w-full max-w-sm">
         <input
           type="text"

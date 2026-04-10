@@ -14,7 +14,7 @@ const kidsGames = [
     gameType: 'kids_pattern',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 101,
   },
   {
@@ -28,7 +28,7 @@ const kidsGames = [
     gameType: 'kids_color_mix',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 102,
   },
   {
@@ -42,7 +42,7 @@ const kidsGames = [
     gameType: 'kids_animal_sort',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 8,
+    maxLevel: 30,
     sortOrder: 103,
   },
   {
@@ -56,7 +56,7 @@ const kidsGames = [
     gameType: 'kids_shape_builder',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 104,
   },
   {
@@ -70,7 +70,7 @@ const kidsGames = [
     gameType: 'kids_story_sequence',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 8,
+    maxLevel: 30,
     sortOrder: 105,
   },
   {
@@ -84,7 +84,7 @@ const kidsGames = [
     gameType: 'kids_odd_one_out',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 106,
   },
   {
@@ -98,7 +98,7 @@ const kidsGames = [
     gameType: 'kids_mirror_match',
     gridSize: 3,
     timeLimit: 0,
-    maxLevel: 8,
+    maxLevel: 30,
     sortOrder: 107,
   },
   {
@@ -112,7 +112,7 @@ const kidsGames = [
     gameType: 'kids_number_ninja',
     gridSize: 0,
     timeLimit: 10,
-    maxLevel: 15,
+    maxLevel: 30,
     sortOrder: 108,
   },
   {
@@ -126,7 +126,7 @@ const kidsGames = [
     gameType: 'kids_word_scramble',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 109,
   },
   {
@@ -140,7 +140,7 @@ const kidsGames = [
     gameType: 'kids_maze',
     gridSize: 7,
     timeLimit: 0,
-    maxLevel: 5,
+    maxLevel: 30,
     sortOrder: 110,
   },
   {
@@ -154,7 +154,7 @@ const kidsGames = [
     gameType: 'kids_treasure_map',
     gridSize: 5,
     timeLimit: 0,
-    maxLevel: 8,
+    maxLevel: 30,
     sortOrder: 111,
   },
   {
@@ -168,7 +168,7 @@ const kidsGames = [
     gameType: 'kids_code_breaker',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 112,
   },
   {
@@ -182,7 +182,7 @@ const kidsGames = [
     gameType: 'kids_balance',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 113,
   },
   {
@@ -196,7 +196,7 @@ const kidsGames = [
     gameType: 'kids_spot_diff',
     gridSize: 4,
     timeLimit: 0,
-    maxLevel: 6,
+    maxLevel: 30,
     sortOrder: 114,
   },
   {
@@ -210,7 +210,7 @@ const kidsGames = [
     gameType: 'kids_rhythm',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 20,
+    maxLevel: 30,
     sortOrder: 115,
   },
   {
@@ -220,11 +220,11 @@ const kidsGames = [
     difficulty: 'beginner',
     description: 'Memorize the pixel art then recreate it from memory! Train your visual memory.',
     benefits: ['Visual Memory', 'Spatial Recall', 'Attention to Detail'],
-    rules: ['Study the pixel art for 3 seconds', 'Recreate it by toggling cells on/off', 'Match the original pattern as closely as possible'],
+    rules: ['Study the pixel art for a few seconds', 'Recreate it by toggling cells on/off', 'Match the original pattern as closely as possible'],
     gameType: 'kids_pixel_art',
     gridSize: 4,
     timeLimit: 0,
-    maxLevel: 8,
+    maxLevel: 30,
     sortOrder: 116,
   },
   {
@@ -234,11 +234,11 @@ const kidsGames = [
     difficulty: 'beginner',
     description: 'Build a chain of words! Each word must start with the last letter of the previous word.',
     benefits: ['Verbal Fluency', 'Vocabulary', 'Quick Thinking'],
-    rules: ['A starting word is given', 'Type a word that starts with its last letter', 'Keep the chain going for 60 seconds'],
+    rules: ['A starting word is given', 'Type a word that starts with its last letter', 'Keep the chain going before time runs out'],
     gameType: 'kids_word_chain',
     gridSize: 0,
     timeLimit: 60,
-    maxLevel: 1,
+    maxLevel: 30,
     sortOrder: 117,
   },
   {
@@ -252,7 +252,7 @@ const kidsGames = [
     gameType: 'kids_guess_rule',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 118,
   },
   {
@@ -266,7 +266,7 @@ const kidsGames = [
     gameType: 'kids_tower',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 119,
   },
   {
@@ -280,7 +280,7 @@ const kidsGames = [
     gameType: 'kids_emotion',
     gridSize: 0,
     timeLimit: 0,
-    maxLevel: 10,
+    maxLevel: 30,
     sortOrder: 120,
   },
 ]

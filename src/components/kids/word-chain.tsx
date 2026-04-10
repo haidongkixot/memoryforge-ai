@@ -1,7 +1,7 @@
 'use client'
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 const WORD_BANK = [
   'APPLE', 'EAGLE', 'EARTH', 'HOUSE', 'EVERY', 'YOUNG', 'GREEN', 'NIGHT', 'TABLE', 'ENTER',
@@ -10,16 +10,20 @@ const WORD_BANK = [
   'ROBOT', 'TOOTH', 'HAPPY', 'YOUTH', 'HORSE', 'EVENT', 'THINK', 'KNIFE', 'EARLY', 'YIELD',
 ]
 
-export default function WordChain({ onComplete }: Props) {
+export default function WordChain({ onComplete, level = 1 }: Props) {
+  const timeLimit = Math.min(30 + level * 2, 90)
+  const minWordLen = level <= 10 ? 2 : level <= 20 ? 3 : 4
+  const ptsPerLetter = 5 + Math.floor(level / 3)
+
   const [chain, setChain] = useState<string[]>([])
   const [input, setInput] = useState('')
-  const [timeLeft, setTimeLeft] = useState(60)
+  const [timeLeft, setTimeLeft] = useState(timeLimit)
   const [started, setStarted] = useState(false)
   const [error, setError] = useState('')
   const [score, setScore] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const startWord = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)]
+  const startWord = useMemo(() => WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)], [level])
 
   useEffect(() => {
     if (!started) return
@@ -32,8 +36,9 @@ export default function WordChain({ onComplete }: Props) {
     setChain([startWord])
     setStarted(true)
     setScore(0)
+    setTimeLeft(timeLimit)
     setTimeout(() => inputRef.current?.focus(), 100)
-  }, [startWord])
+  }, [startWord, timeLimit])
 
   const handleSubmit = useCallback(() => {
     if (!input.trim()) return
@@ -41,22 +46,23 @@ export default function WordChain({ onComplete }: Props) {
     const lastWord = chain[chain.length - 1]
     const requiredLetter = lastWord[lastWord.length - 1]
 
-    if (word.length < 2) { setError('Too short!'); return }
+    if (word.length < minWordLen) { setError(`Must be ${minWordLen}+ letters!`); return }
     if (word[0] !== requiredLetter) { setError(`Must start with "${requiredLetter}"!`); return }
     if (chain.includes(word)) { setError('Already used!'); return }
 
     setChain(c => [...c, word])
-    const pts = word.length * 10
+    const pts = word.length * ptsPerLetter
     setScore(s => s + pts)
     setInput('')
     setError('')
-  }, [input, chain])
+  }, [input, chain, minWordLen, ptsPerLetter])
 
   if (!started) {
     return (
       <div className="flex flex-col items-center gap-5 py-4">
         <p className="text-[#6B7280] font-medium text-center max-w-md">
-          Build a chain of words! Each word must start with the last letter of the previous word. Go for 60 seconds!
+          Build a chain of words! Each word must start with the last letter of the previous word. Go for {timeLimit} seconds!
+          {minWordLen > 2 && <span className="block mt-1 text-orange-500">Min {minWordLen} letters per word!</span>}
         </p>
         <div className="text-center">
           <span className="text-4xl font-extrabold text-[#1f2937]">{startWord}</span>
@@ -83,13 +89,11 @@ export default function WordChain({ onComplete }: Props) {
         </span>
       </div>
 
-      {/* Timer bar */}
       <div className="w-full max-w-md h-2 bg-gray-100 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-1000"
-          style={{ width: `${(timeLeft / 60) * 100}%`, backgroundColor: timeLeft > 10 ? '#22C55E' : '#EF4444' }} />
+          style={{ width: `${(timeLeft / timeLimit) * 100}%`, backgroundColor: timeLeft > 10 ? '#22C55E' : '#EF4444' }} />
       </div>
 
-      {/* Current word / last letter */}
       <div className="text-center">
         <div className="text-3xl font-extrabold text-[#1f2937]">{lastWord}</div>
         <p className="text-sm text-[#6B7280] mt-1">
@@ -97,7 +101,6 @@ export default function WordChain({ onComplete }: Props) {
         </p>
       </div>
 
-      {/* Input */}
       <div className="flex gap-2 w-full max-w-sm">
         <input ref={inputRef} type="text" value={input}
           onChange={e => { setInput(e.target.value); setError('') }}
@@ -114,7 +117,6 @@ export default function WordChain({ onComplete }: Props) {
 
       {error && <p className="text-red-400 text-sm font-semibold">{error}</p>}
 
-      {/* Chain display */}
       <div className="flex flex-wrap gap-2 justify-center max-w-md">
         {chain.map((word, i) => (
           <span key={i} className="bg-gradient-to-r from-blue-100 to-purple-100 text-[#1f2937] px-3 py-1 rounded-full text-sm font-semibold">

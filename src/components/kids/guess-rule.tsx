@@ -1,7 +1,7 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 interface RuleQ {
   groupA: string[]
@@ -24,19 +24,26 @@ const PUZZLES: RuleQ[] = [
   { groupA: ['☀️', '🌙', '⭐'], groupB: ['🏠', '🏫', '🏰'], testItem: '🌍', correctGroup: 'A', rule: 'Things in the sky vs buildings!' },
   { groupA: ['👶', '🧒', '👦'], groupB: ['👴', '👵', '🧓'], testItem: '👧', correctGroup: 'A', rule: 'Young people vs old people!' },
   { groupA: ['🥶', '❄️', '🧊'], groupB: ['🥵', '🔥', '☀️'], testItem: '🌨️', correctGroup: 'A', rule: 'Cold things vs hot things!' },
+  { groupA: ['🎨', '🖌️', '🖍️'], groupB: ['🔨', '🔧', '🪛'], testItem: '✏️', correctGroup: 'A', rule: 'Art supplies vs tools!' },
+  { groupA: ['🌊', '🏊', '🐟'], groupB: ['🏔️', '🧗', '🦅'], testItem: '🐙', correctGroup: 'A', rule: 'Water things vs mountain things!' },
+  { groupA: ['🍫', '🍭', '🍬'], groupB: ['🥦', '🥕', '🥒'], testItem: '🧁', correctGroup: 'A', rule: 'Sweet treats vs vegetables!' },
+  { groupA: ['📱', '💻', '📺'], groupB: ['📚', '📝', '📏'], testItem: '🎮', correctGroup: 'A', rule: 'Electronics vs paper items!' },
+  { groupA: ['🌅', '🌄', '🏖️'], groupB: ['🌃', '🌆', '🏙️'], testItem: '☀️', correctGroup: 'A', rule: 'Daytime vs nighttime scenes!' },
+  { groupA: ['🎵', '🎶', '🎤'], groupB: ['🔇', '🤫', '😶'], testItem: '🎺', correctGroup: 'A', rule: 'Sounds vs silence!' },
 ]
 
-export default function GuessRule({ onComplete }: Props) {
+export default function GuessRule({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(6 + Math.floor(level / 3), 15)
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [feedback, setFeedback] = useState<null | boolean>(null)
-  const [shuffled] = useState(() => [...PUZZLES].sort(() => Math.random() - 0.5).slice(0, 10))
+  const shuffled = useMemo(() => [...PUZZLES].sort(() => Math.random() - 0.5).slice(0, rounds), [level, rounds])
   const total = shuffled.length
 
   const handlePick = useCallback((group: 'A' | 'B') => {
     if (feedback !== null) return
     const correct = group === shuffled[round].correctGroup
-    const pts = correct ? 100 : 0
+    const pts = correct ? 50 + level * 5 : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
@@ -44,7 +51,7 @@ export default function GuessRule({ onComplete }: Props) {
       if (round + 1 >= total) onComplete(score + pts)
       else { setRound(r => r + 1); setFeedback(null) }
     }, 2000)
-  }, [round, total, feedback, score, shuffled, onComplete])
+  }, [round, total, feedback, score, shuffled, level, onComplete])
 
   const q = shuffled[round]
 
@@ -57,7 +64,6 @@ export default function GuessRule({ onComplete }: Props) {
 
       <p className="text-[#6B7280] font-medium text-center">Figure out the rule! Where does the new item belong?</p>
 
-      {/* Two groups */}
       <div className="flex gap-4 w-full max-w-md">
         <button onClick={() => handlePick('A')}
           className={`flex-1 border-2 rounded-2xl p-4 text-center transition-all active:scale-95 ${
@@ -83,7 +89,6 @@ export default function GuessRule({ onComplete }: Props) {
         </button>
       </div>
 
-      {/* Test item */}
       <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl px-8 py-4 text-center">
         <div className="text-xs text-yellow-600 font-semibold mb-1">Where does this belong?</div>
         <span className="text-5xl">{q.testItem}</span>

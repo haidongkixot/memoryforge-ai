@@ -1,14 +1,14 @@
 'use client'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 
-interface Props { onComplete: (score: number) => void }
+interface Props { onComplete: (score: number) => void; level?: number }
 
 interface MathQ { question: string; answer: number; opts: number[] }
 
-function genQuestion(round: number): MathQ {
-  const maxNum = round < 5 ? 10 : round < 10 ? 20 : 50
-  const ops = round < 5 ? ['+', '-'] : ['+', '-', '×']
-  const op = ops[Math.floor(Math.random() * ops.length)]
+function genQuestion(level: number, seed: number): MathQ {
+  const maxNum = level <= 10 ? 10 + level : level <= 20 ? 20 + level : 30 + level * 2
+  const ops = level <= 8 ? ['+', '-'] : level <= 18 ? ['+', '-', '×'] : ['+', '-', '×', '÷']
+  const op = ops[(seed * 3) % ops.length]
 
   let a: number, b: number, answer: number
 
@@ -24,9 +24,14 @@ function genQuestion(round: number): MathQ {
       answer = a - b
       break
     case '×':
-      a = Math.floor(Math.random() * 10) + 1
-      b = Math.floor(Math.random() * 10) + 1
+      a = Math.floor(Math.random() * Math.min(12, 5 + Math.floor(level / 3))) + 1
+      b = Math.floor(Math.random() * Math.min(12, 5 + Math.floor(level / 3))) + 1
       answer = a * b
+      break
+    case '÷':
+      b = Math.floor(Math.random() * 10) + 2
+      answer = Math.floor(Math.random() * 10) + 1
+      a = b * answer
       break
     default:
       a = 1; b = 1; answer = 2
@@ -46,12 +51,14 @@ function genQuestion(round: number): MathQ {
   }
 }
 
-export default function NumberNinja({ onComplete }: Props) {
+export default function NumberNinja({ onComplete, level = 1 }: Props) {
+  const rounds = Math.min(8 + Math.floor(level / 3), 15)
+  const timePerQ = level <= 10 ? 10 : level <= 20 ? 8 : 6
   const [round, setRound] = useState(0)
   const [score, setScore] = useState(0)
   const [feedback, setFeedback] = useState<null | boolean>(null)
-  const [timeLeft, setTimeLeft] = useState(10)
-  const [questions] = useState(() => Array.from({ length: 15 }, (_, i) => genQuestion(i)))
+  const [timeLeft, setTimeLeft] = useState(timePerQ)
+  const questions = useMemo(() => Array.from({ length: rounds }, (_, i) => genQuestion(level, i)), [level, rounds])
   const total = questions.length
   const startRef = useRef(Date.now())
 
@@ -61,27 +68,27 @@ export default function NumberNinja({ onComplete }: Props) {
       setFeedback(false)
       setTimeout(() => {
         if (round + 1 >= total) onComplete(score)
-        else { setRound(r => r + 1); setFeedback(null); setTimeLeft(10); startRef.current = Date.now() }
+        else { setRound(r => r + 1); setFeedback(null); setTimeLeft(timePerQ); startRef.current = Date.now() }
       }, 800)
       return
     }
     const t = setTimeout(() => setTimeLeft(s => s - 1), 1000)
     return () => clearTimeout(t)
-  }, [timeLeft, feedback, round, total, score, onComplete])
+  }, [timeLeft, feedback, round, total, score, timePerQ, onComplete])
 
   const handlePick = useCallback((opt: number) => {
     if (feedback !== null) return
     const correct = opt === questions[round].answer
-    const speed = Math.max(0, 10 - Math.round((Date.now() - startRef.current) / 1000))
-    const pts = correct ? 50 + speed * 5 : 0
+    const speed = Math.max(0, timePerQ - Math.round((Date.now() - startRef.current) / 1000))
+    const pts = correct ? (50 + level * 5) + speed * 3 : 0
     setScore(s => s + pts)
     setFeedback(correct)
 
     setTimeout(() => {
       if (round + 1 >= total) onComplete(score + pts)
-      else { setRound(r => r + 1); setFeedback(null); setTimeLeft(10); startRef.current = Date.now() }
+      else { setRound(r => r + 1); setFeedback(null); setTimeLeft(timePerQ); startRef.current = Date.now() }
     }, 800)
-  }, [round, total, feedback, score, questions, onComplete])
+  }, [round, total, feedback, score, questions, level, timePerQ, onComplete])
 
   const q = questions[round]
 
@@ -95,10 +102,9 @@ export default function NumberNinja({ onComplete }: Props) {
         </span>
       </div>
 
-      {/* Timer bar */}
       <div className="w-full max-w-md h-2 bg-gray-100 rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-1000"
-          style={{ width: `${(timeLeft / 10) * 100}%`, backgroundColor: timeLeft > 3 ? '#22C55E' : '#EF4444' }} />
+          style={{ width: `${(timeLeft / timePerQ) * 100}%`, backgroundColor: timeLeft > 3 ? '#22C55E' : '#EF4444' }} />
       </div>
 
       <div className="text-center py-4">
