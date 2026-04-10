@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
-const POSTS: Record<string, { title: string; date: string; category: string; content: string }> = {
+const FALLBACK_POSTS: Record<string, { title: string; date: string; category: string; content: string }> = {
   'memory-palace': {
     title: 'The Memory Palace Technique Explained',
     date: 'March 20, 2026', category: 'Technique',
@@ -112,8 +113,29 @@ If you are serious about improving your memory, sleep is non-negotiable. Schedul
   },
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = POSTS[params.slug]
+async function getPost(slug: string) {
+  try {
+    const dbPost = await (prisma as any).blogPost.findUnique({
+      where: { slug },
+    })
+    if (dbPost && dbPost.status === 'published') {
+      return {
+        title: dbPost.title,
+        date: dbPost.publishedAt
+          ? new Date(dbPost.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : '',
+        category: dbPost.tags?.[0] ?? 'Insight',
+        content: dbPost.body,
+      }
+    }
+  } catch {
+    // DB not ready — fall through
+  }
+  return FALLBACK_POSTS[slug] ?? null
+}
+
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getPost(params.slug)
   if (!post) notFound()
 
   return (

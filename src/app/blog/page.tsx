@@ -1,13 +1,38 @@
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
 
-const BLOG_POSTS = [
+const FALLBACK_POSTS = [
   { slug: 'memory-palace', title: 'The Memory Palace Technique Explained', excerpt: 'Learn how ancient Greek orators memorized entire speeches using mental architecture — and how you can too.', date: '2026-03-20', category: 'Technique' },
   { slug: 'n-back-training', title: 'N-Back Training: Science vs. Hype', excerpt: 'Does dual n-back training actually improve fluid intelligence? We examine the research.', date: '2026-03-12', category: 'Science' },
   { slug: 'spaced-repetition', title: 'Spaced Repetition: The Ultimate Memory Tool', excerpt: 'Why forgetting is actually good for memory, and how to use the forgetting curve to your advantage.', date: '2026-03-05', category: 'Strategy' },
   { slug: 'sleep-and-memory', title: 'Sleep: The Missing Link in Memory Training', excerpt: 'Your brain consolidates memories during sleep. Here is how to optimize your sleep for maximum retention.', date: '2026-02-25', category: 'Health' },
 ]
 
-export default function BlogPage() {
+async function getBlogPosts() {
+  try {
+    const dbPosts = await (prisma as any).blogPost.findMany({
+      where: { status: 'published' },
+      orderBy: { publishedAt: 'desc' },
+      select: { slug: true, title: true, excerpt: true, tags: true, publishedAt: true },
+    })
+    if (dbPosts && dbPosts.length > 0) {
+      return dbPosts.map((p: any) => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt ?? '',
+        date: p.publishedAt ? new Date(p.publishedAt).toISOString().slice(0, 10) : '',
+        category: p.tags?.[0] ?? 'Insight',
+      }))
+    }
+  } catch {
+    // DB not ready — fall through to hardcoded
+  }
+  return FALLBACK_POSTS
+}
+
+export default async function BlogPage() {
+  const posts = await getBlogPosts()
+
   return (
     <div className="min-h-screen bg-[#F8F9FE]">
       <div className="max-w-4xl mx-auto px-4 py-16">
@@ -16,7 +41,7 @@ export default function BlogPage() {
           <p className="text-[#6B7280]">Memory science, training techniques, and cognitive performance insights</p>
         </div>
         <div className="grid gap-6">
-          {BLOG_POSTS.map(post => (
+          {posts.map((post: any) => (
             <Link key={post.slug} href={`/blog/${post.slug}`}
               className="block bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:border-[#593CC8]/30 hover:shadow-md transition-all group">
               <div className="flex items-start justify-between gap-4">

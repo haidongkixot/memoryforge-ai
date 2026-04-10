@@ -370,3 +370,23 @@ model AIConfig {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+// ─── Blog ────────────────────────────────────────────────────
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String?   @db.Text
+  body        String    @db.Text
+  coverImage  String?
+  tags        String[]
+  status      String    @default("draft")
+  authorId    String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([publishedAt])
+}
