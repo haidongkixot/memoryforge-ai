@@ -1,10 +1,12 @@
 'use client'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 const plans = [
   {
     name: 'Free',
+    slug: 'free',
     price: '$0',
     period: 'forever',
     description: 'Get started with core memory games',
@@ -17,11 +19,11 @@ const plans = [
     ],
     limitations: ['No AI Coach', 'No intermediate or advanced games', 'Limited Academy access'],
     cta: 'Get Started',
-    href: '/signup',
     highlighted: false,
   },
   {
     name: 'Pro',
+    slug: 'pro',
     price: '$4.99',
     period: '/month',
     description: 'Unlock your full cognitive potential',
@@ -38,13 +40,42 @@ const plans = [
     ],
     limitations: [],
     cta: 'Upgrade to Pro',
-    href: '/signup',
     highlighted: true,
   },
 ]
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
+  const [loadingSlug, setLoadingSlug] = useState<string | null>(null)
+  const { data: session } = useSession()
+
+  async function handleCheckout(slug: string) {
+    if (!session?.user) {
+      window.location.href = '/signup'
+      return
+    }
+    setLoadingSlug(slug)
+    try {
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceSlug: slug,
+          interval: annual ? 'yearly' : 'monthly',
+        }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        console.error('Checkout error:', data.error)
+      }
+    } catch (err) {
+      console.error('Checkout error:', err)
+    } finally {
+      setLoadingSlug(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FE]">
@@ -122,16 +153,22 @@ export default function PricingPage() {
                   {plan.price === '$0' ? ' forever' : annual ? '/month (billed yearly)' : plan.period}
                 </span>
               </div>
-              <Link
-                href={plan.href}
-                className={`block w-full text-center py-3 rounded-full font-semibold transition-colors text-sm ${
-                  plan.highlighted
-                    ? 'bg-[#593CC8] hover:bg-[#4a30a8] text-white shadow-[0_4px_15px_rgba(89,60,200,0.25)]'
-                    : 'bg-[#F8F9FE] hover:bg-gray-100 text-[#1f2937] border border-gray-200'
-                }`}
-              >
-                {plan.cta}
-              </Link>
+              {plan.slug === 'free' ? (
+                <Link
+                  href="/signup"
+                  className="block w-full text-center py-3 rounded-full font-semibold transition-colors text-sm bg-[#F8F9FE] hover:bg-gray-100 text-[#1f2937] border border-gray-200"
+                >
+                  {plan.cta}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handleCheckout(plan.slug)}
+                  disabled={loadingSlug === plan.slug}
+                  className="block w-full text-center py-3 rounded-full font-semibold transition-colors text-sm disabled:opacity-60 bg-[#593CC8] hover:bg-[#4a30a8] text-white shadow-[0_4px_15px_rgba(89,60,200,0.25)]"
+                >
+                  {loadingSlug === plan.slug ? 'Redirecting...' : plan.cta}
+                </button>
+              )}
               <div className="mt-8 space-y-3">
                 {plan.features.map((f) => (
                   <div key={f} className="flex items-start gap-3">

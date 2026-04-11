@@ -33,6 +33,8 @@ model User {
   analyticsEvents AnalyticsEvent[]
   activityLogs  ActivityLog[]
   chapterProgress UserChapterProgress[]
+  plan            String            @default("free")
+  subscriptions   Subscription[]
 }
 
 model Account {
@@ -389,4 +391,50 @@ model BlogPost {
 
   @@index([status])
   @@index([publishedAt])
+}
+
+model EmailSubscriber {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  source       String    @default("landing_page")
+  status       String    @default("active")
+  subscribedAt DateTime  @default(now())
+  unsubAt      DateTime?
+
+  @@index([status])
+}
+
+// ─── Plans & Subscriptions ───────────────────────────────
+
+model Plan {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  name          String
+  priceMonthly  Float          @default(0)
+  priceYearly   Float          @default(0)
+  features      Json?
+  isActive      Boolean        @default(true)
+  sortOrder     Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  userId             String
+  planId             String
+  status             String    @default("active")
+  period             String    @default("monthly")
+  stripeSubId        String?   @unique
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  startDate          DateTime  @default(now())
+  endDate            DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime  @default(now())
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan               Plan      @relation(fields: [planId], references: [id])
+
+  @@index([userId])
 }

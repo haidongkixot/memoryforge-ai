@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import NewsletterSignup from '@/components/newsletter-signup'
 
 export const dynamic = 'force-dynamic'
 
@@ -698,6 +699,13 @@ export default async function Home() {
               Begin baseline test
             </Link>
           </div>
+        </section>
+
+        {/* Newsletter */}
+        <section className="py-16 px-6 text-center">
+          <h2 className="text-2xl font-semibold mb-2">Weekly Brain Training Tips</h2>
+          <p className="text-gray-400 mb-6 max-w-lg mx-auto">Neuroscience-backed exercises and cognitive training insights every Tuesday.</p>
+          <NewsletterSignup />
         </section>
       </main>
 
