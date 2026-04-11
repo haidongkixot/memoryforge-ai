@@ -1,7 +1,7 @@
 'use client'
+
 import Link from 'next/link'
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
 
 const plans = [
   {
@@ -47,13 +47,8 @@ const plans = [
 export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
   const [loadingSlug, setLoadingSlug] = useState<string | null>(null)
-  const { data: session } = useSession()
 
   async function handleCheckout(slug: string) {
-    if (!session?.user) {
-      window.location.href = '/signup'
-      return
-    }
     setLoadingSlug(slug)
     try {
       const res = await fetch('/api/billing/checkout', {
