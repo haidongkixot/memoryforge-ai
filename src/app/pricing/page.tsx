@@ -48,6 +48,20 @@ export default function PricingPage() {
   const [annual, setAnnual] = useState(false)
   const [loadingSlug, setLoadingSlug] = useState<string | null>(null)
 
+  async function handlePayPalCheckout(slug: string) {
+    setLoadingSlug(`paypal-${slug}`)
+    try {
+      const res = await fetch('/api/billing/paypal/create-subscription', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceSlug: slug, interval: annual ? 'yearly' : 'monthly' }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+      else alert(data.error || 'PayPal unavailable')
+    } catch { alert('Network error') }
+    finally { setLoadingSlug(null) }
+  }
+
   async function handleCheckout(slug: string) {
     setLoadingSlug(slug)
     try {
@@ -156,13 +170,30 @@ export default function PricingPage() {
                   {plan.cta}
                 </Link>
               ) : (
-                <button
-                  onClick={() => handleCheckout(plan.slug)}
-                  disabled={loadingSlug === plan.slug}
-                  className="block w-full text-center py-3 rounded-full font-semibold transition-colors text-sm disabled:opacity-60 bg-[#593CC8] hover:bg-[#4a30a8] text-white shadow-[0_4px_15px_rgba(89,60,200,0.25)]"
-                >
-                  {loadingSlug === plan.slug ? 'Redirecting...' : plan.cta}
-                </button>
+                <>
+                  <button
+                    onClick={() => handleCheckout(plan.slug)}
+                    disabled={loadingSlug === plan.slug}
+                    className="block w-full text-center py-3 rounded-full font-semibold transition-colors text-sm disabled:opacity-60 bg-[#593CC8] hover:bg-[#4a30a8] text-white shadow-[0_4px_15px_rgba(89,60,200,0.25)]"
+                  >
+                    {loadingSlug === plan.slug ? 'Redirecting...' : plan.cta}
+                  </button>
+                  <button
+                    onClick={() => handlePayPalCheckout(plan.slug)}
+                    disabled={loadingSlug !== null}
+                    className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-gray-200 bg-white hover:bg-[#F8F9FE] text-[#003087] text-sm font-semibold transition disabled:opacity-50"
+                  >
+                    {loadingSlug === `paypal-${plan.slug}` ? 'Redirecting...' : (
+                      <>
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-[#009CDE]" aria-hidden="true">
+                          <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 0 0-.794.68l-.04.22-.63 3.993-.032.17a.804.804 0 0 1-.794.679H7.72a.483.483 0 0 1-.477-.558L7.418 21h1.518l.95-6.02h1.385c4.678 0 7.75-2.203 8.796-6.502z"/>
+                          <path d="M9.738 6.145c.24-.394.63-.696 1.086-.812.234-.06.48-.09.73-.09h5.245c.622 0 1.2.033 1.73.1a6.7 6.7 0 0 1 1.017.228c.29.09.557.203.8.34.257-1.632-.002-2.743-.887-3.75C18.392.947 16.524.5 14.073.5H7.02a.96.96 0 0 0-.949.812L3.082 17.43a.578.578 0 0 0 .57.668H7.42L9.738 6.145z"/>
+                        </svg>
+                        Pay with PayPal
+                      </>
+                    )}
+                  </button>
+                </>
               )}
               <div className="mt-8 space-y-3">
                 {plan.features.map((f) => (

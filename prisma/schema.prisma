@@ -454,6 +454,7 @@ model Subscription {
   status             String    @default("active")
   period             String    @default("monthly")
   stripeSubId        String?   @unique
+  paypalSubId        String?   @unique
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
   startDate          DateTime  @default(now())
