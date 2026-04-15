@@ -133,6 +133,9 @@ export default function DashboardPage() {
         <Link href="/progress" className="border border-gray-200 hover:border-[#593CC8]/50 text-[#6B7280] hover:text-[#593CC8] px-6 py-3 rounded-full transition-colors font-medium">
           View Progress
         </Link>
+        <Link href="/settings/referral" className="bg-[#593CC8]/10 hover:bg-[#593CC8]/20 border border-[#593CC8]/30 text-[#593CC8] px-6 py-3 rounded-full transition-colors font-medium flex items-center gap-2">
+          🎁 Invite Friends
+        </Link>
       </div>
     </div>
   )
