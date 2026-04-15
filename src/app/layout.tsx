@@ -11,12 +11,14 @@ export const metadata: Metadata = {
 
 import Footer from '@/components/footer'
 import GoogleAnalytics from '@/components/google-analytics'
+import EcosystemBar from '@/components/ecosystem-bar'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${quicksand.className} bg-[#F8FAFC] text-[#1f2937] min-h-screen`}>
         <GoogleAnalytics />
+        <EcosystemBar />
         {children}
         <Footer />
       </body>

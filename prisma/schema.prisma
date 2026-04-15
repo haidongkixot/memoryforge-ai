@@ -35,6 +35,7 @@ model User {
   chapterProgress UserChapterProgress[]
   plan            String            @default("free")
   subscriptions   Subscription[]
+  referralCode     ReferralCode?
 }
 
 model Account {
@@ -371,6 +372,32 @@ model AIConfig {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model ReferralCode {
+  id        String           @id @default(cuid())
+  userId    String           @unique
+  code      String           @unique
+  clicks    Int              @default(0)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referrals ReferralReward[]
+
+  @@index([code])
+}
+
+model ReferralReward {
+  id             String       @id @default(cuid())
+  referrerId     String
+  referredUserId String       @unique
+  referralCodeId String
+  activatedAt    DateTime?
+  rewardGranted  Boolean      @default(false)
+  rewardType     String       @default("free_month")
+  createdAt      DateTime     @default(now())
+  referralCode   ReferralCode @relation(fields: [referralCodeId], references: [id])
+
+  @@index([referrerId])
 }
 
 // ─── Blog ────────────────────────────────────────────────────
