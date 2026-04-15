@@ -1,101 +1,30 @@
-/**
- * POST /api/billing/checkout
- *
- * Body: { priceSlug: 'pro', interval: 'monthly'|'yearly' }
- * Returns: { url: string }
- */
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 import { createCheckoutSession } from '@/lib/stripe/checkout'
-import {
-  isBillingInterval,
-  isPaidPlanSlug,
-} from '@/lib/stripe/tier-resolver'
+import { isPaidPlanSlug, isBillingInterval } from '@/lib/stripe/tier-resolver'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-function getAppUrl(): string {
-  return (
-    process.env.NEXTAUTH_URL ??
-    process.env.APP_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    'http://localhost:3000'
-  )
-}
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const userId = (session.user as any).id as string | undefined
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  let body: any
+  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { priceSlug, interval } = await req.json()
+  if (!isPaidPlanSlug(priceSlug)) return NextResponse.json({ error: 'Invalid plan slug' }, { status: 400 })
+  if (!isBillingInterval(interval)) return NextResponse.json({ error: 'Invalid interval' }, { status: 400 })
+  if (!process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
   try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
-  }
-
-  const priceSlug = body?.priceSlug
-  const interval = body?.interval
-
-  if (!isPaidPlanSlug(priceSlug)) {
-    return NextResponse.json(
-      { error: 'priceSlug must be pro' },
-      { status: 400 }
-    )
-  }
-  if (!isBillingInterval(interval)) {
-    return NextResponse.json(
-      { error: 'interval must be monthly or yearly' },
-      { status: 400 }
-    )
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { id: true, email: true, name: true },
-  })
-  if (!user || !user.email) {
-    return NextResponse.json(
-      { error: 'User has no email on file' },
-      { status: 400 }
-    )
-  }
-
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return NextResponse.json(
-      { error: 'Stripe is not configured on this server' },
-      { status: 500 }
-    )
-  }
-
-  try {
-    const result = await createCheckoutSession({
-      userId: user.id,
-      userEmail: user.email,
-      userName: user.name,
-      priceSlug,
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://memoryforge.app'
+    const checkoutSession = await createCheckoutSession({
+      userId: (session.user as any).id,
+      email: session.user.email,
+      planSlug: priceSlug,
       interval,
-      appUrl: getAppUrl(),
+      appUrl,
     })
-    return NextResponse.json({ url: result.url })
+    return NextResponse.json({ url: checkoutSession.url })
   } catch (err: any) {
-    const message = err?.message ?? 'Failed to create checkout session'
-    if (message.startsWith('No Stripe price configured')) {
-      return NextResponse.json({ error: message }, { status: 400 })
-    }
-    console.error('[api/billing/checkout]', err)
-    return NextResponse.json(
-      { error: 'Failed to create checkout session' },
-      { status: 500 }
-    )
+    console.error('[billing/checkout]', err)
+    return NextResponse.json({ error: err.message ?? 'Checkout failed' }, { status: 500 })
   }
 }

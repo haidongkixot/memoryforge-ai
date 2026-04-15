@@ -1,19 +1,11 @@
-/**
- * POST /api/webhooks/stripe
- *
- * Stripe webhook receiver. Verifies signature, deduplicates by event.id,
- * and dispatches subscription events to syncSubscriptionFromStripe.
- */
 import { NextResponse } from 'next/server'
-import type Stripe from 'stripe'
 import { stripe } from '@/lib/stripe/client'
-import { syncSubscriptionFromStripe } from '@/lib/billing/sync'
 import { tryClaimEvent } from '@/lib/billing/webhook-events'
+import { syncSubscriptionFromStripe } from '@/lib/billing/sync'
 
-export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const RELEVANT_TYPES = new Set<string>([
+const HANDLED_EVENTS = new Set([
   'checkout.session.completed',
   'customer.subscription.created',
   'customer.subscription.updated',
@@ -23,110 +15,46 @@ const RELEVANT_TYPES = new Set<string>([
 ])
 
 export async function POST(req: Request) {
-  const signature = req.headers.get('stripe-signature')
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-  if (!webhookSecret) {
-    console.error(
-      '[stripe/webhook] STRIPE_WEBHOOK_SECRET not configured — refusing webhook'
-    )
-    return NextResponse.json(
-      { error: 'Webhook not configured' },
-      { status: 500 }
-    )
-  }
-  if (!signature) {
-    return NextResponse.json(
-      { error: 'Missing stripe-signature header' },
-      { status: 400 }
-    )
-  }
-
-  let rawBody: string
+  const body = await req.text()
+  const sig = req.headers.get('stripe-signature')
+  const secret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!secret || !sig) return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 400 })
+  let event: any
   try {
-    rawBody = await req.text()
-  } catch (err) {
-    console.error('[stripe/webhook] failed to read raw body', err)
-    return NextResponse.json({ error: 'Bad request' }, { status: 400 })
-  }
-
-  let event: Stripe.Event
-  try {
-    event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret)
+    event = stripe.webhooks.constructEvent(body, sig, secret)
   } catch (err: any) {
-    console.error('[stripe/webhook] signature verification failed:', err?.message ?? err)
-    return NextResponse.json(
-      { error: `Webhook signature verification failed: ${err?.message ?? 'unknown'}` },
-      { status: 400 }
-    )
+    console.error('[webhook/stripe] signature error', err.message)
+    return NextResponse.json({ error: `Webhook error: ${err.message}` }, { status: 400 })
   }
-
-  // Idempotency check.
-  let claimed: 'fresh' | 'duplicate'
-  try {
-    claimed = await tryClaimEvent(event.id)
-  } catch (err) {
-    console.error('[stripe/webhook] idempotency claim failed', err)
-    return NextResponse.json({ error: 'Idempotency check failed' }, { status: 500 })
-  }
-  if (claimed === 'duplicate') {
-    console.log('[stripe/webhook] duplicate event, skipping', event.id, event.type)
+  if (!HANDLED_EVENTS.has(event.type)) return NextResponse.json({ received: true, skipped: true })
+  const status = await tryClaimEvent(event.id)
+  if (status === 'duplicate') {
+    console.log('[webhook/stripe] duplicate event', event.id, event.type)
     return NextResponse.json({ received: true, duplicate: true })
   }
-
-  // Dispatch.
   try {
-    if (!RELEVANT_TYPES.has(event.type)) {
-      console.log('[stripe/webhook] ignoring event type', event.type, event.id)
-      return NextResponse.json({ received: true, ignored: true })
+    if (event.type === 'checkout.session.completed') {
+      const cs = event.data.object
+      if (cs.mode === 'subscription' && cs.subscription) {
+        const subscription = await stripe.subscriptions.retrieve(cs.subscription as string, { expand: ['items.data.price'] })
+        await syncSubscriptionFromStripe(subscription)
+      }
+    } else if (
+      event.type === 'customer.subscription.created' ||
+      event.type === 'customer.subscription.updated' ||
+      event.type === 'customer.subscription.deleted'
+    ) {
+      await syncSubscriptionFromStripe(event.data.object)
+    } else if (event.type === 'invoice.paid' || event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object
+      if (invoice.subscription) {
+        const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string, { expand: ['items.data.price'] })
+        await syncSubscriptionFromStripe(subscription)
+      }
     }
-
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
-        if (session.mode === 'subscription' && session.subscription) {
-          const subId =
-            typeof session.subscription === 'string'
-              ? session.subscription
-              : session.subscription.id
-          const sub = await stripe.subscriptions.retrieve(subId)
-          await syncSubscriptionFromStripe(sub)
-        }
-        break
-      }
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
-        const sub = event.data.object as Stripe.Subscription
-        await syncSubscriptionFromStripe(sub)
-        break
-      }
-      case 'invoice.paid':
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice
-        const subRef = (invoice as any).subscription
-        if (subRef) {
-          const subId = typeof subRef === 'string' ? subRef : subRef.id
-          try {
-            const sub = await stripe.subscriptions.retrieve(subId)
-            await syncSubscriptionFromStripe(sub)
-          } catch (err) {
-            console.warn(
-              '[stripe/webhook] failed to refetch subscription for invoice',
-              subId,
-              err
-            )
-          }
-        }
-        break
-      }
-      default:
-        break
-    }
-
-    return NextResponse.json({ received: true })
   } catch (err) {
-    console.error('[stripe/webhook] handler failed', event.type, event.id, err)
-    return NextResponse.json({ error: 'Handler failed' }, { status: 500 })
+    console.error('[webhook/stripe] handler error', event.type, err)
+    return NextResponse.json({ error: 'Handler error' }, { status: 500 })
   }
+  return NextResponse.json({ received: true })
 }

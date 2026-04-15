@@ -1,112 +1,37 @@
-/**
- * createCheckoutSession — server-side helper that wraps Stripe's
- * checkout.sessions.create with MemoryForge conventions.
- */
-import type Stripe from 'stripe'
+import Stripe from 'stripe'
 import { stripe } from './client'
-import {
-  getStripePriceId,
-  type BillingInterval,
-  type PlanSlug,
-} from './tier-resolver'
+import { getStripePriceId, type PlanSlug, type BillingInterval } from './tier-resolver'
+
+export async function findOrCreateCustomerByEmail(email: string, userId: string): Promise<string> {
+  const existing = await stripe.customers.list({ email, limit: 1 })
+  if (existing.data.length > 0) return existing.data[0].id
+  const customer = await stripe.customers.create({ email, metadata: { userId } })
+  return customer.id
+}
 
 export interface CreateCheckoutSessionParams {
   userId: string
-  userEmail: string
-  userName?: string | null
-  priceSlug: Exclude<PlanSlug, 'free'>
+  email: string
+  planSlug: PlanSlug
   interval: BillingInterval
   appUrl: string
 }
 
-export interface CreateCheckoutSessionResult {
-  url: string
-  sessionId: string
-  customerId: string
-  priceId: string
-}
-
-export async function findOrCreateCustomerByEmail(
-  email: string,
-  name?: string | null,
-  metadata?: Record<string, string>
-): Promise<Stripe.Customer> {
-  const existing = await stripe.customers.list({ email, limit: 1 })
-  if (existing.data.length > 0) {
-    return existing.data[0]
-  }
-  return stripe.customers.create({
-    email,
-    name: name ?? undefined,
-    metadata: metadata ?? undefined,
-  })
-}
-
-export async function createCheckoutSession(
-  params: CreateCheckoutSessionParams
-): Promise<CreateCheckoutSessionResult> {
-  const {
-    userId,
-    userEmail,
-    userName,
-    priceSlug,
-    interval,
-    appUrl,
-  } = params
-
-  const priceId = getStripePriceId(priceSlug, interval)
-  if (!priceId) {
-    throw new Error(
-      `No Stripe price configured for slug=${priceSlug} interval=${interval}. ` +
-        `Set STRIPE_PRICE_${priceSlug.toUpperCase()}_${interval.toUpperCase()} in env.`
-    )
-  }
-
-  const customer = await findOrCreateCustomerByEmail(userEmail, userName, {
-    userId,
-  })
-
-  const successUrl = `${appUrl.replace(/\/$/, '')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`
-  const cancelUrl = `${appUrl.replace(/\/$/, '')}/checkout/canceled`
-
-  const session = await stripe.checkout.sessions.create({
+export async function createCheckoutSession(params: CreateCheckoutSessionParams): Promise<Stripe.Checkout.Session> {
+  const { userId, email, planSlug, interval, appUrl } = params
+  const priceId = getStripePriceId(planSlug, interval)
+  if (!priceId) throw new Error(`No price configured for ${planSlug}:${interval}`)
+  const customerId = await findOrCreateCustomerByEmail(email, userId)
+  const base = appUrl.replace(/\/$/, '')
+  return stripe.checkout.sessions.create({
+    customer: customerId,
+    payment_method_types: ['card'],
+    line_items: [{ price: priceId, quantity: 1 }],
     mode: 'subscription',
-    customer: customer.id,
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    customer_update: {
-      address: 'auto',
-    },
+    success_url: `${base}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${base}/checkout/canceled`,
+    metadata: { userId, planSlug, interval },
     allow_promotion_codes: true,
     billing_address_collection: 'auto',
-    metadata: {
-      userId,
-      planSlug: priceSlug,
-      interval,
-    },
-    subscription_data: {
-      metadata: {
-        userId,
-        planSlug: priceSlug,
-        interval,
-      },
-    },
   })
-
-  if (!session.url) {
-    throw new Error('Stripe returned a checkout session without a URL')
-  }
-
-  return {
-    url: session.url,
-    sessionId: session.id,
-    customerId: customer.id,
-    priceId,
-  }
 }
