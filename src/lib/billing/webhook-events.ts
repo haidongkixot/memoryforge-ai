@@ -4,14 +4,14 @@ function makeKey(eventId: string): string { return `${KEY_PREFIX}${eventId}` }
 export async function hasProcessedEvent(eventId: string): Promise<boolean> {
   if (!eventId) return false
   try {
-    const row = await prisma.siteSettings.findUnique({ where: { key: makeKey(eventId) } })
+    const row = await prisma.appConfig.findUnique({ where: { key: makeKey(eventId) } })
     return Boolean(row)
   } catch { return false }
 }
 export async function claimEvent(eventId: string): Promise<boolean> {
   if (!eventId) return false
   try {
-    await prisma.siteSettings.create({
+    await prisma.appConfig.create({
       data: { key: makeKey(eventId), value: { timestamp: new Date().toISOString() } },
     })
     return true
