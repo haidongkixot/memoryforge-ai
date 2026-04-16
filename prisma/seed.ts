@@ -70,6 +70,11 @@ async function main() {
   }
   console.log('  ✓ App Config')
 
+  // Plans
+  const freePlan = await prisma.plan.upsert({ where: { slug: 'free' }, update: {}, create: { slug: 'free', name: 'Free', priceMonthly: 0, priceYearly: 0, features: { games_per_day: 5, ai_coach: '3 messages/day', leaderboard: true }, isActive: true, sortOrder: 0 } })
+  const proPlan = await prisma.plan.upsert({ where: { slug: 'pro' }, update: {}, create: { slug: 'pro', name: 'Pro', priceMonthly: 7.99, priceYearly: 71.88, features: { games_per_day: 'unlimited', ai_coach: 'unlimited', leaderboard: true, advanced_analytics: true, all_games: true }, isActive: true, sortOrder: 1 } })
+  console.log('  ✓ Plans')
+
   // Users
   const adminHash = await bcrypt.hash('admin123!', 12)
   const demoHash = await bcrypt.hash('demo1234', 12)
@@ -79,7 +84,11 @@ async function main() {
   const marcus = await prisma.user.upsert({ where: { email: 'marcus.johnson@example.com' }, update: {}, create: { email: 'marcus.johnson@example.com', name: 'Marcus Johnson', password: demoHash } })
   const emma = await prisma.user.upsert({ where: { email: 'emma.wilson@example.com' }, update: {}, create: { email: 'emma.wilson@example.com', name: 'Emma Wilson', password: demoHash } })
   const alex = await prisma.user.upsert({ where: { email: 'alex.rivera@example.com' }, update: {}, create: { email: 'alex.rivera@example.com', name: 'Alex Rivera', password: demoHash } })
-  console.log('  ✓ Users')
+  // Tier test accounts
+  const freeUser = await prisma.user.upsert({ where: { email: 'free@memoryforge.ai' }, update: {}, create: { email: 'free@memoryforge.ai', name: 'Free Tester', password: demoHash, plan: 'free' } })
+  const proUser = await prisma.user.upsert({ where: { email: 'pro@memoryforge.ai' }, update: {}, create: { email: 'pro@memoryforge.ai', name: 'Pro Tester', password: demoHash, plan: 'pro' } })
+  await prisma.subscription.upsert({ where: { id: 'sub-pro-mf' }, update: {}, create: { id: 'sub-pro-mf', userId: proUser.id, planId: proPlan.id, status: 'active', period: 'monthly', startDate: daysAgo(15), endDate: daysAgo(-15) } })
+  console.log('  ✓ Users + Plans')
 
   // Game Sessions
   const allGames = await prisma.game.findMany({ select: { id: true, slug: true } })
