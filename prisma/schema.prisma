@@ -36,6 +36,47 @@ model User {
   plan            String            @default("free")
   subscriptions   Subscription[]
   referralCode     ReferralCode?
+  extensionTokens       ExtensionToken[]
+  extensionPairingCodes ExtensionPairingCode[]
+  extensionPreferences  ExtensionPreferences?
+}
+
+// ─── Chrome Extension ─────────────────────────────────────
+
+model ExtensionToken {
+  id               String    @id @default(cuid())
+  userId           String
+  tokenHash        String    @unique
+  refreshHash      String    @unique
+  extensionId      String
+  userAgent        String?
+  issuedAt         DateTime  @default(now())
+  expiresAt        DateTime
+  refreshExpiresAt DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model ExtensionPairingCode {
+  code      String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId])
+}
+
+model ExtensionPreferences {
+  userId    String   @id
+  syncGames Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
