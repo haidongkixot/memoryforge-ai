@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useUserPlan } from '@/hooks/use-user-plan'
 
 const PLAN_BADGE: Record<string, { label: string; className: string }> = {
@@ -10,11 +10,38 @@ const PLAN_BADGE: Record<string, { label: string; className: string }> = {
   pro: { label: 'Pro', className: 'bg-purple-50 text-purple-600' },
 }
 
+function initialOf(name: string | null | undefined, email: string | null | undefined) {
+  const src = (name?.trim() || email || '').trim()
+  return (src[0] ?? '?').toUpperCase()
+}
+
 export default function Navbar() {
   const { data: session } = useSession()
   const [open, setOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
   const { plan } = useUserPlan()
   const badge = PLAN_BADGE[plan] ?? PLAN_BADGE.free
+
+  const initial = initialOf(session?.user?.name, session?.user?.email)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function onDocClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpen])
 
   return (
     <nav className="bg-white border-b border-[#E5E7EB] shadow-[0_2px_15px_rgba(99,102,241,0.04)]">
@@ -40,7 +67,51 @@ export default function Navbar() {
                 {plan === 'free' && (
                   <Link href="/pricing" className="text-xs text-[#6366f1] hover:text-[#4f50d9] font-semibold transition-colors">Upgrade</Link>
                 )}
-                <button onClick={() => signOut()} className="text-[#6B7280] hover:text-[#6366f1] text-sm font-medium">Sign Out</button>
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setMenuOpen((v) => !v)}
+                    aria-haspopup="menu"
+                    aria-expanded={menuOpen}
+                    aria-label="Open user menu"
+                    className="w-9 h-9 rounded-full bg-gradient-to-br from-[#6366f1] to-[#593CC8] flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_8px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_15px_rgba(99,102,241,0.4)] transition"
+                  >
+                    {initial}
+                  </button>
+                  {menuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden z-50"
+                    >
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-medium text-[#1f2937] truncate">{session.user?.name ?? 'Account'}</p>
+                        <p className="text-xs text-[#6B7280] truncate">{session.user?.email}</p>
+                      </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-4 py-2.5 text-sm text-[#1f2937] hover:bg-[#F8F9FE] hover:text-[#593CC8] transition"
+                        role="menuitem"
+                      >
+                        Profile
+                      </Link>
+                      <Link
+                        href="/settings"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-4 py-2.5 text-sm text-[#1f2937] hover:bg-[#F8F9FE] hover:text-[#593CC8] transition"
+                        role="menuitem"
+                      >
+                        Settings
+                      </Link>
+                      <button
+                        onClick={() => { setMenuOpen(false); signOut() }}
+                        className="block w-full text-left px-4 py-2.5 text-sm text-[#1f2937] hover:bg-[#F8F9FE] hover:text-[#593CC8] transition border-t border-gray-100"
+                        role="menuitem"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <Link href="/login" className="bg-[#6366f1] hover:bg-[#5558e6] text-white px-5 py-2 rounded-full text-sm font-semibold transition-colors shadow-[0_4px_15px_rgba(99,102,241,0.25)]">Sign In</Link>
@@ -62,13 +133,29 @@ export default function Navbar() {
             <Link href="/kids-zone" className="block text-[#F97316] hover:text-[#EA580C] py-1 font-bold">For Little Ones</Link>
             <Link href="/coach" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Coach</Link>
             <Link href="/progress" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Progress</Link>
-            {session && (
-              <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>{badge.label}</span>
-                {plan === 'free' && (
-                  <Link href="/pricing" className="text-xs text-[#6366f1] font-semibold">Upgrade</Link>
-                )}
+            {session ? (
+              <div className="pt-2 border-t border-gray-100 space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6366f1] to-[#593CC8] flex items-center justify-center text-white font-bold text-sm">
+                    {initial}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[#1f2937] truncate">{session.user?.name ?? 'Account'}</p>
+                    <p className="text-xs text-[#6B7280] truncate">{session.user?.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.className}`}>{badge.label}</span>
+                  {plan === 'free' && (
+                    <Link href="/pricing" className="text-xs text-[#6366f1] font-semibold">Upgrade</Link>
+                  )}
+                </div>
+                <Link href="/profile" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Profile</Link>
+                <Link href="/settings" className="block text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Settings</Link>
+                <button onClick={() => signOut()} className="block text-left text-[#6B7280] hover:text-[#6366f1] py-1 font-medium">Sign Out</button>
               </div>
+            ) : (
+              <Link href="/login" className="block text-[#6366f1] py-1 font-semibold">Sign In</Link>
             )}
           </div>
         )}
