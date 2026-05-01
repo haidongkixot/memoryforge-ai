@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 
 const FALLBACK_POSTS: Record<string, { title: string; date: string; category: string; content: string }> = {
@@ -146,7 +147,27 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         <h1 className="text-4xl font-bold text-[#593CC8] mt-4 mb-3">{post.title}</h1>
         <p className="text-[#6B7280] text-sm mb-10">{post.date}</p>
         <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+          <div className="float-right ml-6 mb-4 hidden sm:block bg-[#FFF8F2] rounded-xl p-2">
+            <Image
+              src="/illustrations/memoryforge-blog-memorized-dance-steps-v1.png"
+              alt="Memorized dance steps — embodied recall through repetition"
+              width={220}
+              height={220}
+              className="w-44 h-44 object-contain"
+            />
+          </div>
           <div className="text-[#1f2937] leading-relaxed space-y-4 whitespace-pre-wrap">{post.content}</div>
+          <div className="clear-both mt-10 pt-6 border-t border-gray-100 flex justify-center">
+            <div className="bg-[#FFF8F2] rounded-xl p-2">
+              <Image
+                src="/illustrations/memoryforge-blog-whiteboard-mind-map-v1.png"
+                alt="Whiteboard mind map connecting ideas to strengthen memory networks"
+                width={300}
+                height={220}
+                className="w-auto h-44 object-contain"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

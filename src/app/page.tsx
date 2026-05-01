@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import NewsletterSignup from '@/components/newsletter-signup'
 
@@ -119,11 +120,14 @@ export default async function Home() {
 
               {/* Hero image */}
               <div className="relative hidden lg:block">
-                <div className="rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(99,102,241,0.15)] border-4 border-white">
-                  <img
-                    src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&q=80"
-                    alt="Students engaging with educational activities"
-                    className="w-full h-[480px] object-cover"
+                <div className="rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(99,102,241,0.15)] border-4 border-white bg-[#FFF8F2]">
+                  <Image
+                    src="/illustrations/memoryforge-hero-recall-with-eyes-closed-v1.png"
+                    alt="Hand-drawn illustration of a learner recalling with eyes closed, sharpening memory"
+                    width={600}
+                    height={600}
+                    priority
+                    className="w-full h-[480px] object-contain"
                   />
                 </div>
                 {/* Floating accent badge */}
@@ -515,6 +519,75 @@ export default async function Home() {
                   <div className="w-10 text-center text-[9px] text-[#6366f1]/60 font-mono">n+3</div>
                 </div>
                 <p className="text-[#9CA3AF] text-xs mt-3">Identify repeated items N positions back</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION: Memory in Daily Life — Illustrated Features */}
+        <section className="px-4 py-20 bg-[#FFF8F2]">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-[#6366f1] text-sm font-semibold tracking-widest uppercase mb-3">Memory in daily life</p>
+            <h2 className="text-3xl font-bold text-[#1f2937] tracking-tight mb-3">What sharper recall feels like</h2>
+            <p className="text-[#6B7280] text-base mb-12 max-w-xl">
+              From learning a new language to making the right move under pressure &mdash; trained memory shows up everywhere.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-2xl p-5 border border-[#E5E7EB] shadow-[0_2px_15px_rgba(99,102,241,0.04)] hover:shadow-md transition-shadow">
+                <div className="rounded-xl overflow-hidden mb-4 bg-[#FFF8F2]">
+                  <Image
+                    src="/illustrations/memoryforge-features-language-flashcards-joy-v1.png"
+                    alt="Joyful flashcard study session strengthening vocabulary recall"
+                    width={300}
+                    height={300}
+                    className="w-full h-48 object-contain"
+                  />
+                </div>
+                <h3 className="text-[#1f2937] font-semibold tracking-tight mb-1">Vocabulary Flashcards</h3>
+                <p className="text-[#6B7280] text-sm">Spaced repetition turns new words into long-term memory.</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-5 border border-[#E5E7EB] shadow-[0_2px_15px_rgba(99,102,241,0.04)] hover:shadow-md transition-shadow">
+                <div className="rounded-xl overflow-hidden mb-4 bg-[#FFF8F2]">
+                  <Image
+                    src="/illustrations/memoryforge-features-thoughtful-chess-move-v1.png"
+                    alt="Thoughtful chess move illustrating strategic memory and pattern recognition"
+                    width={300}
+                    height={300}
+                    className="w-full h-48 object-contain"
+                  />
+                </div>
+                <h3 className="text-[#1f2937] font-semibold tracking-tight mb-1">Strategic Thinking</h3>
+                <p className="text-[#6B7280] text-sm">Pattern memory powers anticipation, planning, and the right move.</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-5 border border-[#E5E7EB] shadow-[0_2px_15px_rgba(99,102,241,0.04)] hover:shadow-md transition-shadow">
+                <div className="rounded-xl overflow-hidden mb-4 bg-[#FFF8F2]">
+                  <Image
+                    src="/illustrations/memoryforge-features-crossword-aha-moment-v1.png"
+                    alt="Crossword aha moment showing the joy of effortful recall and discovery"
+                    width={300}
+                    height={300}
+                    className="w-full h-48 object-contain"
+                  />
+                </div>
+                <h3 className="text-[#1f2937] font-semibold tracking-tight mb-1">Aha Moments</h3>
+                <p className="text-[#6B7280] text-sm">Active recall trains your mind to surface the right answer when it counts.</p>
+              </div>
+
+              <div className="bg-white rounded-2xl p-5 border border-[#E5E7EB] shadow-[0_2px_15px_rgba(99,102,241,0.04)] hover:shadow-md transition-shadow">
+                <div className="rounded-xl overflow-hidden mb-4 bg-[#FFF8F2]">
+                  <Image
+                    src="/illustrations/memoryforge-features-abacus-rhythm-fingers-v1.png"
+                    alt="Abacus rhythm with fingers building mental math fluency and working memory"
+                    width={300}
+                    height={300}
+                    className="w-full h-48 object-contain"
+                  />
+                </div>
+                <h3 className="text-[#1f2937] font-semibold tracking-tight mb-1">Mental Math Rhythm</h3>
+                <p className="text-[#6B7280] text-sm">Working memory drills sharpen focus span and number sense.</p>
               </div>
             </div>
           </div>

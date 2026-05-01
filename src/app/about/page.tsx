@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -11,6 +12,16 @@ export default function AboutPage() {
     <main className="min-h-screen bg-[#F8F9FE]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/illustrations/memoryforge-about-generations-puzzle-together-v1.png"
+              alt="Generations solving a puzzle together — memory training across every age"
+              width={500}
+              height={400}
+              priority
+              className="w-auto h-64 object-contain"
+            />
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-[#593CC8] mb-4">
             About <span className="text-[#5DEAEA]">MemoryForge AI</span>
           </h1>
@@ -31,6 +42,20 @@ export default function AboutPage() {
           </section>
 
           <section className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+            <div className="grid md:grid-cols-[200px,1fr] gap-6 items-center mb-6">
+              <div className="bg-[#FFF8F2] rounded-xl p-2 flex justify-center">
+                <Image
+                  src="/illustrations/memoryforge-about-writing-by-hand-v1.png"
+                  alt="Writing by hand — a proven way to encode and retain new information"
+                  width={220}
+                  height={220}
+                  className="w-44 h-44 object-contain"
+                />
+              </div>
+              <p className="text-[#6B7280] text-sm leading-relaxed">
+                We believe in evidence-based methods &mdash; from handwriting and active recall to spaced repetition &mdash; combined with thoughtful AI to keep training personal.
+              </p>
+            </div>
             <h2 className="text-2xl font-bold text-[#593CC8] mb-4">Key Features</h2>
             <ul className="space-y-3 text-[#1f2937]">
               <li className="flex items-start gap-3">

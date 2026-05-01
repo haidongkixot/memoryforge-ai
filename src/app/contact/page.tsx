@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 
 export default function ContactPage() {
@@ -15,6 +16,18 @@ export default function ContactPage() {
     <main className="min-h-screen bg-[#080a14]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
+          <div className="flex justify-center mb-6">
+            <div className="bg-white/95 rounded-2xl p-3">
+              <Image
+                src="/illustrations/memoryforge-contact-card-game-concentration-v1.png"
+                alt="Card game concentration — focused attention and memory in play"
+                width={500}
+                height={400}
+                priority
+                className="w-auto h-56 object-contain"
+              />
+            </div>
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Contact <span className="text-indigo-400">Us</span>
           </h1>

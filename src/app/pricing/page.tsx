@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 
 const plans = [
@@ -107,6 +108,16 @@ export default function PricingPage() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/illustrations/memoryforge-pricing-musician-memorizes-piece-v1.png"
+              alt="Musician memorizing a piece — committed practice that builds mastery"
+              width={500}
+              height={400}
+              priority
+              className="w-auto h-64 object-contain"
+            />
+          </div>
           <h1 className="text-4xl font-bold text-[#593CC8] mb-4">Simple, Transparent Pricing</h1>
           <p className="text-[#6B7280] text-lg max-w-2xl mx-auto">
             Start training your memory for free. Upgrade to Pro when you are ready for personalized AI coaching and advanced training.

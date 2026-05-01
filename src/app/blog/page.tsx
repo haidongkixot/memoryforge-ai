@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 
 const FALLBACK_POSTS = [
@@ -37,6 +38,16 @@ export default async function BlogPage() {
     <div className="min-h-screen bg-[#F8F9FE]">
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/illustrations/memoryforge-blog-actor-rehearses-lines-v1.png"
+              alt="Actor rehearsing lines — disciplined practice for reliable recall"
+              width={500}
+              height={400}
+              priority
+              className="w-auto h-56 object-contain"
+            />
+          </div>
           <h1 className="text-4xl font-bold text-[#593CC8] mb-3">MemoryForge Blog</h1>
           <p className="text-[#6B7280]">Memory science, training techniques, and cognitive performance insights</p>
         </div>
